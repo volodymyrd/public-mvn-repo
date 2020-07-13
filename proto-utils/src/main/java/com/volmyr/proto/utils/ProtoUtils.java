@@ -1,4 +1,4 @@
-package online.addbot.protos;
+package com.volmyr.proto.utils;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
