@@ -1,2 +1,1 @@
-# public-mvn-repo
-Public maven repo
+# Public maven repo

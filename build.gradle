@@ -1,0 +1,71 @@
+defaultTasks 'clean', 'build'
+
+subprojects {
+    ext {
+        versions = [
+                junit          : '4.13',
+                assertj        : '3.16.1',
+                guava          : '29.0-jre',
+                auto_value     : '1.7.4',
+                protobuf_gradle: '0.8.12',
+                protobuf       : '3.12.2',
+        ]
+
+        libs = [:]
+
+        libs.test = ["junit:junit:${versions.junit}", "org.assertj:assertj-core:${versions.assertj}"]
+
+        libs.protoc = "com.google.protobuf:protoc:${versions.protobuf}"
+
+        libs.protobuf = ["com.google.protobuf:protobuf-java:${versions.protobuf}"]
+
+        libs.protobuf_util = ["com.google.protobuf:protobuf-java-util:${versions.protobuf}"]
+
+        libs.protobuf_gradle =
+                "com.google.protobuf:protobuf-gradle-plugin:${versions.protobuf_gradle}"
+
+        libs.guava = ["com.google.guava:guava:${versions.guava}"]
+
+        libs.auto_value = ["com.google.auto.value:auto-value-annotations:${versions.auto_value}",
+                           "com.google.auto.value:auto-value:${versions.auto_value}"]
+    }
+
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+
+    sourceCompatibility = targetCompatibility = 1.8
+
+    compileJava {
+        options.encoding = "UTF-8"
+        options.annotationProcessorPath = configurations.annotationProcessor
+        options.setAnnotationProcessorGeneratedSourcesDirectory(file("$projectDir/src/main/generated"))
+    }
+    compileTestJava {
+        options.encoding = "UTF-8"
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    task wrapper(type: Wrapper) {
+        gradleVersion = '6.3'
+    }
+
+    buildDir = 'target'
+
+    version = 'latest'
+
+    test {
+        testLogging {
+            afterSuite { desc, result ->
+                if (!desc.parent) { // will match the outermost suite
+                    println "Results: " +
+                            "${result.resultType} (${result.testCount} tests, " +
+                            "${result.successfulTestCount} successes, ${result.failedTestCount} failures, " +
+                            "${result.skippedTestCount} skipped)"
+                }
+            }
+        }
+    }
+}

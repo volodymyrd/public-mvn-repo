@@ -1,0 +1,47 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath libs.protobuf_gradle
+    }
+}
+
+apply plugin: 'com.google.protobuf'
+
+protobuf {
+    generatedFilesBaseDir = "$projectDir/src/main/generated"
+    protoc {
+        artifact = libs.protoc
+    }
+}
+
+clean {
+    delete protobuf.generatedFilesBaseDir
+}
+
+dependencies {
+    implementation libs.protobuf
+    implementation libs.protobuf_util
+
+    testImplementation libs.test
+    testImplementation libs.protobuf
+    testImplementation libs.protobuf_util
+}
+
+jar {
+    def cmd = "git rev-parse --short HEAD"
+    def proc = cmd.execute()
+    ext.revision = proc.text.trim()
+
+    manifest {
+        attributes(
+                "Implementation-Version": version + " build: " + ext.revision,
+                "releases-date": new Date().format("yyyy-MM-dd'T 'HH:mm:ss.SSSZZ"),
+                "Specification-Vendor": "Volmyr.com",
+                "Specification-Title": "Proto utils"
+        )
+    }
+
+    baseName 'ptoto-utils'
+}
