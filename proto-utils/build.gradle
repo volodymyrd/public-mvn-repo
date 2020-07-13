@@ -8,6 +8,7 @@ buildscript {
 }
 
 apply plugin: 'com.google.protobuf'
+apply plugin: 'idea'
 
 protobuf {
     generatedFilesBaseDir = "$projectDir/src/main/generated"
@@ -44,4 +45,46 @@ jar {
     }
 
     baseName 'ptoto-utils'
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'com.volmyr'
+            artifactId = 'proto-utils'
+            version = version
+            from components.java
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = 'Proto Utils library'
+                description = 'Provide util methods for working with Google proto'
+                developers {
+                    developer {
+                        id = 'volodymyrd'
+                        name = 'Volodymyr Dotsenko'
+                        email = 'volodymyrdotsenko@volmyr.com'
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GithubPublicMavenRepo"
+            url = uri("https://maven.pkg.github.com/volodymyrd/public-mvn-repo")
+            credentials {
+                // ~/.gradle/gradle.properties
+                username = project.findProperty("repo.user") ?: System.getenv("USERNAME")
+                password = project.findProperty("public_mvn_repo.key") ?: System.getenv("TOKEN")
+            }
+        }
+    }
 }
