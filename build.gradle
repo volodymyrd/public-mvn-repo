@@ -54,7 +54,7 @@ subprojects {
 
     buildDir = 'target'
 
-    version = 'latest'
+    version = '0.0.1'
 
     test {
         testLogging {
