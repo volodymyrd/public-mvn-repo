@@ -54,7 +54,7 @@ subprojects {
 
     buildDir = 'target'
 
-    version = '0.0.3'
+    version = '0.0.5'
 
     test {
         testLogging {
@@ -77,7 +77,7 @@ subprojects {
                 credentials {
                     // ~/.gradle/gradle.properties
                     username = project.findProperty("repo.user") ?: System.getenv("USERNAME")
-                    password = project.findProperty("public_mvn_repo.key") ?: System.getenv("TOKEN")
+                    password = project.findProperty("mvn_repo_rw.key") ?: System.getenv("TOKEN")
                 }
             }
         }
