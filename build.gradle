@@ -54,7 +54,7 @@ subprojects {
 
     buildDir = 'target'
 
-    version = '0.0.1'
+    version = '0.0.2'
 
     test {
         testLogging {
@@ -64,6 +64,20 @@ subprojects {
                             "${result.resultType} (${result.testCount} tests, " +
                             "${result.successfulTestCount} successes, ${result.failedTestCount} failures, " +
                             "${result.skippedTestCount} skipped)"
+                }
+            }
+        }
+    }
+
+    publishing {
+        repositories {
+            maven {
+                name = "GithubPublicMavenRepo"
+                url = uri("https://maven.pkg.github.com/volodymyrd/public-mvn-repo")
+                credentials {
+                    // ~/.gradle/gradle.properties
+                    username = project.findProperty("repo.user") ?: System.getenv("USERNAME")
+                    password = project.findProperty("public_mvn_repo.key") ?: System.getenv("TOKEN")
                 }
             }
         }
