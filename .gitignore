@@ -2,6 +2,11 @@
 .gradle
 .idea
 
+common-utils/target/
+common-utils/out/
+common-utils/src/main/generated/
+common-utils/generated/
+
 proto-utils/target/
 proto-utils/out/
 proto-utils/src/main/generated/
