@@ -9,6 +9,7 @@ subprojects {
                 auto_value     : '1.7.4',
                 protobuf_gradle: '0.8.12',
                 protobuf       : '3.12.2',
+                google_auth    : '0.21.1',
         ]
 
         libs = [:]
@@ -28,6 +29,9 @@ subprojects {
 
         libs.auto_value = ["com.google.auto.value:auto-value-annotations:${versions.auto_value}",
                            "com.google.auto.value:auto-value:${versions.auto_value}"]
+
+        libs.google_auth = [
+                "com.google.auth:google-auth-library-oauth2-http:${versions.google_auth}"]
     }
 
     apply plugin: 'java-library'

@@ -1,3 +1,4 @@
 rootProject.name = 'public-mvn-repo'
 include 'common-utils'
+include 'oauth2-utils'
 include 'proto-utils'

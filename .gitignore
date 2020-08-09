@@ -7,6 +7,11 @@ common-utils/out/
 common-utils/src/main/generated/
 common-utils/generated/
 
+oauth2-utils/target/
+oauth2-utils/out/
+oauth2-utils/src/main/generated/
+oauth2-utils/generated/
+
 proto-utils/target/
 proto-utils/out/
 proto-utils/src/main/generated/
