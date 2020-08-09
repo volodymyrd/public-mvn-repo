@@ -18,7 +18,7 @@ import javax.annotation.Nullable;
 public final class GoogleOAuth2Utils {
 
   @Nullable
-  private static String getToken(@Nullable String clientId, Collection<String> scopes)
+  public static String getToken(@Nullable String clientId, Collection<String> scopes)
       throws IOException {
     if (isNullOrEmpty(clientId)) {
       return null;
