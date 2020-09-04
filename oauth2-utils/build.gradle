@@ -2,6 +2,7 @@ dependencies {
     implementation libs.google_auth
 
     testImplementation libs.test
+    testImplementation libs.guava
 }
 
 jar {

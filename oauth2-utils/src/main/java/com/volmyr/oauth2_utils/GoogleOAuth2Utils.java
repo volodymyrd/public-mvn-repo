@@ -8,6 +8,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.auth.oauth2.IdTokenCredentials;
 import com.google.auth.oauth2.IdTokenProvider;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import javax.annotation.Nullable;
@@ -20,12 +21,21 @@ public final class GoogleOAuth2Utils {
   @Nullable
   public static String getToken(@Nullable String clientId, Collection<String> scopes)
       throws IOException {
+    return getToken(clientId, null, scopes);
+  }
+
+  @Nullable
+  public static String getToken(
+      @Nullable String clientId,
+      @Nullable String pathToFileWithCredentials,
+      Collection<String> scopes)
+      throws IOException {
     if (isNullOrEmpty(clientId)) {
       return null;
     }
     checkArgument(scopes != null && !scopes.isEmpty(), "Parameter 'scopes' must be set");
-    GoogleCredentials credentials =
-        GoogleCredentials.getApplicationDefault().createScoped(scopes);
+
+    GoogleCredentials credentials = getGoogleCredentials(pathToFileWithCredentials, scopes);
 
     checkNotNull(credentials, "Expected to load credentials");
     checkState(
@@ -38,6 +48,16 @@ public final class GoogleOAuth2Utils {
         .setIdTokenProvider((IdTokenProvider) credentials)
         .setTargetAudience(clientId)
         .build().refreshAccessToken().getTokenValue();
+  }
+
+  private static GoogleCredentials getGoogleCredentials(
+      @Nullable String pathToFileWithCredentials, Collection<String> scopes) throws IOException {
+    if (!isNullOrEmpty(pathToFileWithCredentials)) {
+      try (FileInputStream fileInputStream = new FileInputStream(pathToFileWithCredentials)) {
+        return GoogleCredentials.fromStream(fileInputStream);
+      }
+    }
+    return GoogleCredentials.getApplicationDefault().createScoped(scopes);
   }
 
   private GoogleOAuth2Utils() {
