@@ -1,6 +1,8 @@
 dependencies {
     implementation libs.guava
 
+    compileOnly libs.servlet_api
+
     testImplementation libs.test
     testImplementation libs.guava
 }
