@@ -22,6 +22,21 @@ public final class ServletUtils {
     return remoteAddress;
   }
 
+  /**
+   * Extracts schema, host and port from {@link HttpServletRequest} and concatenates them.
+   */
+  public static String getSchemeHostPortUrl(HttpServletRequest request) {
+    int serverPort = request.getServerPort();
+    StringBuilder url = new StringBuilder();
+    url.append(request.getScheme()).append("://").append(request.getServerName());
+
+    if (serverPort != 80 && serverPort != 443) {
+      url.append(":").append(serverPort);
+    }
+
+    return url.append("/").toString();
+  }
+
   private ServletUtils() {
   }
 }
