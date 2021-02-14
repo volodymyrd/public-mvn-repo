@@ -24,7 +24,7 @@ jar {
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            groupId = 'com.volmyr.private'
+            groupId = 'com.volmyr'
             artifactId = 'telephony-api'
             version = version
             from components.java
