@@ -16,3 +16,8 @@ proto-utils/target/
 proto-utils/out/
 proto-utils/src/main/generated/
 proto-utils/generated/
+
+telephony-api/target/
+telephony-api/out/
+telephony-api/src/main/generated/
+telephony-api/generated/
