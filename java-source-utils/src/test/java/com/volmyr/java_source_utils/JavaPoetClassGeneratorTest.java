@@ -3,6 +3,7 @@ package com.volmyr.java_source_utils;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.squareup.javapoet.MethodSpec;
 import javax.lang.model.element.Modifier;
 import org.junit.Test;
@@ -35,7 +36,7 @@ public class JavaPoetClassGeneratorTest {
   @Test
   public void shouldGenerateOverridingFor_ToString_WithNoFields() {
     assertThat(JavaPoetClassGenerator
-        .overrideToString("Person", ImmutableList.of()).toString())
+        .overrideToString("Person", ImmutableMap.of()).toString())
         .isEqualTo("@java.lang.Override\n"
             + "public java.lang.String toString() {\n"
             + "  return \"Person{}\";\n"
@@ -44,8 +45,8 @@ public class JavaPoetClassGeneratorTest {
 
   @Test
   public void shouldGenerateOverridingFor_ToString_WithOneField() {
-    assertThat(JavaPoetClassGenerator
-        .overrideToString("Person", ImmutableList.of("name")).toString())
+    assertThat(JavaPoetClassGenerator.overrideToString(
+        "Person", ImmutableMap.of("name", true)).toString())
         .isEqualTo("@java.lang.Override\n"
             + "public java.lang.String toString() {\n"
             + "  return \"Person{\" +\n"
@@ -56,8 +57,8 @@ public class JavaPoetClassGeneratorTest {
 
   @Test
   public void shouldGenerateOverridingFor_ToString_WithMoreThanOneFields() {
-    assertThat(JavaPoetClassGenerator
-        .overrideToString("Person", ImmutableList.of("firstName", "lastName")).toString())
+    assertThat(JavaPoetClassGenerator.overrideToString(
+        "Person", ImmutableMap.of("firstName", true, "lastName", true)).toString())
         .isEqualTo("@java.lang.Override\n"
             + "public java.lang.String toString() {\n"
             + "  return \"Person{\" +\n"

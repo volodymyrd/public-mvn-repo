@@ -5,7 +5,8 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 import java.lang.reflect.Type;
-import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import javax.lang.model.element.Modifier;
 
 /**
@@ -20,11 +21,12 @@ public final class JavaPoetClassGenerator {
     return TypeSpec.classBuilder(className);
   }
 
-  public static MethodSpec overrideToString(String className, List<String> fieldNames) {
+  public static MethodSpec overrideToString(String className, Map<String, Boolean> fields) {
     StringBuilder builder = new StringBuilder("\"" + className + "{");
-    if (fieldNames != null && !fieldNames.isEmpty()) {
+    if (fields != null && !fields.isEmpty()) {
       builder.append("\"");
-      for (int i = 0; i < fieldNames.size(); i++) {
+      int i = 0;
+      for (Entry<String, Boolean> e : fields.entrySet()) {
         builder.append(" +\n");
         if (i == 0) {
           builder.append("\"");
@@ -32,12 +34,13 @@ public final class JavaPoetClassGenerator {
           builder.append("\", ");
         }
         builder
-            .append(fieldNames.get(i))
-            .append("='\"")
+            .append(e.getKey())
+            .append(e.getValue() ? "='\"" : "=\"")
             .append(" + ")
-            .append(fieldNames.get(i))
-            .append(" + ")
-            .append("'\\''");
+            .append(e.getKey())
+            .append(e.getValue() ? " + " : "")
+            .append(e.getValue() ? "'\\''" : "");
+        i++;
       }
       builder
           .append(" +\n")
