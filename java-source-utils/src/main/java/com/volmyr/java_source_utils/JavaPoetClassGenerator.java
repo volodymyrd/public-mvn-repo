@@ -1,17 +1,94 @@
 package com.volmyr.java_source_utils;
 
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
+import java.lang.reflect.Type;
+import java.util.List;
 import javax.lang.model.element.Modifier;
 
 /**
- * Java class generator using JavaPoet library.
+ * Java class generator utils, using JavaPoet library.
  */
 public final class JavaPoetClassGenerator {
 
   private final String packageName;
   private final boolean skipJavaLangImports;
+
+  public static TypeSpec.Builder builder(String className) {
+    return TypeSpec.classBuilder(className);
+  }
+
+  public static MethodSpec overrideToString(String className, List<String> fieldNames) {
+    StringBuilder builder = new StringBuilder("\"" + className + "{");
+    if (fieldNames != null && !fieldNames.isEmpty()) {
+      builder.append("\"");
+      for (int i = 0; i < fieldNames.size(); i++) {
+        builder.append(" +\n");
+        if (i == 0) {
+          builder.append("\"");
+        } else {
+          builder.append("\", ");
+        }
+        builder
+            .append(fieldNames.get(i))
+            .append("='\"")
+            .append(" + ")
+            .append(fieldNames.get(i))
+            .append(" + ")
+            .append("'\\''");
+      }
+      builder
+          .append(" +\n")
+          .append("'}'");
+    } else {
+      builder.append("}\"");
+    }
+    return MethodSpec.methodBuilder("toString")
+        .addAnnotation(Override.class)
+        .addModifiers(Modifier.PUBLIC)
+        .returns(String.class)
+        .addStatement("return $L", builder)
+        .build();
+  }
+
+  public static MethodSpec getGetter(Type fieldType, String fieldName) {
+    return MethodSpec.methodBuilder(fieldToMethod("get", fieldName))
+        .addModifiers(Modifier.PUBLIC)
+        .returns(fieldType)
+        .addStatement("return $L", fieldName)
+        .build();
+  }
+
+  public static MethodSpec getSetter(Type fieldType, String fieldName) {
+    return MethodSpec.methodBuilder(fieldToMethod("set", fieldName))
+        .addModifiers(Modifier.PUBLIC)
+        .addParameter(fieldType, fieldName)
+        .addStatement("this.$L = $L", fieldName, fieldName)
+        .build();
+  }
+
+  static String fieldToMethod(String prefix, String fieldName) {
+    return prefix
+        + fieldName.substring(0, 1).toUpperCase()
+        + fieldName.substring(1);
+  }
+
+  public static FieldSpec getPrivateField(Type fieldType, String fieldName) {
+    return getPrivateField(fieldType, fieldName, false);
+  }
+
+  public static FieldSpec getPrivateField(Type fieldType, String fieldName, boolean isFinal) {
+    if (isFinal) {
+      return FieldSpec.builder(fieldType, fieldName)
+          .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+          .build();
+    }
+    return FieldSpec.builder(fieldType, fieldName)
+        .addModifiers(Modifier.PRIVATE)
+        .build();
+  }
 
   public JavaPoetClassGenerator(String packageName) {
     this(packageName, false);
@@ -30,7 +107,7 @@ public final class JavaPoetClassGenerator {
   }
 
   public String generate(String className, Iterable<MethodSpec> methods, Modifier... modifiers) {
-    TypeSpec helloWorld = TypeSpec.classBuilder(className)
+    TypeSpec helloWorld = builder(className)
         .addModifiers(modifiers)
         .addMethods(methods)
         .build();

@@ -31,4 +31,39 @@ public class JavaPoetClassGeneratorTest {
             + "  }\n"
             + "}\n");
   }
+
+  @Test
+  public void shouldGenerateOverridingFor_ToString_WithNoFields() {
+    assertThat(JavaPoetClassGenerator
+        .overrideToString("Person", ImmutableList.of()).toString())
+        .isEqualTo("@java.lang.Override\n"
+            + "public java.lang.String toString() {\n"
+            + "  return \"Person{}\";\n"
+            + "}\n");
+  }
+
+  @Test
+  public void shouldGenerateOverridingFor_ToString_WithOneField() {
+    assertThat(JavaPoetClassGenerator
+        .overrideToString("Person", ImmutableList.of("name")).toString())
+        .isEqualTo("@java.lang.Override\n"
+            + "public java.lang.String toString() {\n"
+            + "  return \"Person{\" +\n"
+            + "      \"name='\" + name + '\\'' +\n"
+            + "      '}';\n"
+            + "}\n");
+  }
+
+  @Test
+  public void shouldGenerateOverridingFor_ToString_WithMoreThanOneFields() {
+    assertThat(JavaPoetClassGenerator
+        .overrideToString("Person", ImmutableList.of("firstName", "lastName")).toString())
+        .isEqualTo("@java.lang.Override\n"
+            + "public java.lang.String toString() {\n"
+            + "  return \"Person{\" +\n"
+            + "      \"firstName='\" + firstName + '\\'' +\n"
+            + "      \", lastName='\" + lastName + '\\'' +\n"
+            + "      '}';\n"
+            + "}\n");
+  }
 }
