@@ -22,6 +22,10 @@ clean {
 }
 
 dependencies {
+    implementation project(':java-source-utils')
+
+    implementation libs.guava
+    implementation libs.javapoet
     implementation libs.protobuf
     implementation libs.protobuf_util
 
