@@ -1,5 +1,6 @@
 rootProject.name = 'public-mvn-repo'
 include 'common-utils'
+include 'java-source-utils'
 include 'oauth2-utils'
 include 'proto-utils'
 include 'telephony-api'

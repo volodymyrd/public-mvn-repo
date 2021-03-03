@@ -3,21 +3,28 @@ defaultTasks 'clean', 'build'
 subprojects {
     ext {
         versions = [
-                junit          : '4.13',
                 assertj        : '3.16.1',
-                guava          : '29.0-jre',
                 auto_value     : '1.7.4',
+                google_auth    : '0.21.1',
+                guava          : '29.0-jre',
+                junit          : '4.13',
+                javapoet       : '1.13.0',
                 protobuf_gradle: '0.8.12',
                 protobuf       : '3.12.2',
-                google_auth    : '0.21.1',
                 servlet_api    : '2.5',
         ]
 
         libs = [:]
 
-        libs.test = ["junit:junit:${versions.junit}", "org.assertj:assertj-core:${versions.assertj}"]
+        libs.auto_value = ["com.google.auto.value:auto-value-annotations:${versions.auto_value}",
+                           "com.google.auto.value:auto-value:${versions.auto_value}"]
 
-        libs.protoc = "com.google.protobuf:protoc:${versions.protobuf}"
+        libs.google_auth = [
+                "com.google.auth:google-auth-library-oauth2-http:${versions.google_auth}"]
+
+        libs.guava = ["com.google.guava:guava:${versions.guava}"]
+
+        libs.javapoet = "com.squareup:javapoet:${versions.javapoet}"
 
         libs.protobuf = ["com.google.protobuf:protobuf-java:${versions.protobuf}"]
 
@@ -26,15 +33,11 @@ subprojects {
         libs.protobuf_gradle =
                 "com.google.protobuf:protobuf-gradle-plugin:${versions.protobuf_gradle}"
 
-        libs.guava = ["com.google.guava:guava:${versions.guava}"]
-
-        libs.auto_value = ["com.google.auto.value:auto-value-annotations:${versions.auto_value}",
-                           "com.google.auto.value:auto-value:${versions.auto_value}"]
-
-        libs.google_auth = [
-                "com.google.auth:google-auth-library-oauth2-http:${versions.google_auth}"]
+        libs.protoc = "com.google.protobuf:protoc:${versions.protobuf}"
 
         libs.servlet_api = "javax.servlet:servlet-api:${versions.servlet_api}"
+
+        libs.test = ["junit:junit:${versions.junit}", "org.assertj:assertj-core:${versions.assertj}"]
     }
 
     apply plugin: 'java-library'

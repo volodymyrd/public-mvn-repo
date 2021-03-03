@@ -7,6 +7,11 @@ common-utils/out/
 common-utils/src/main/generated/
 common-utils/generated/
 
+java-source-utils/target/
+java-source-utils/out/
+java-source-utils/src/main/generated/
+java-source-utils/generated/
+
 oauth2-utils/target/
 oauth2-utils/out/
 oauth2-utils/src/main/generated/
