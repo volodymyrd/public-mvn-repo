@@ -13,9 +13,10 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.MessageOrBuilder;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
+import com.squareup.javapoet.TypeName;
 import com.volmyr.java_source_utils.JavaPoetClassGenerator;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.List;
 import javax.lang.model.element.Modifier;
 
@@ -24,8 +25,8 @@ import javax.lang.model.element.Modifier;
  */
 public final class ProtoToPojo {
 
+  private static final TypeName STRING = TypeName.get(String.class);
   private final boolean preservingProtoFieldNames;
-
   private final String suffix;
 
   public ProtoToPojo() {
@@ -83,27 +84,31 @@ public final class ProtoToPojo {
       throws ClassNotFoundException {
     switch (field.getJavaType()) {
       case INT:
-        return new Field(getFieldName(field), Integer.class, "Integer", "");
+        return new Field(getFieldName(field), TypeName.get(Integer.class), "Integer", "");
       case LONG:
-        return new Field(getFieldName(field), Long.class, "Long", "");
+        return new Field(getFieldName(field), TypeName.get(Long.class), "Long", "");
       case FLOAT:
-        return new Field(getFieldName(field), Float.class, "Float", "");
+        return new Field(getFieldName(field), TypeName.get(Float.class), "Float", "");
       case DOUBLE:
-        return new Field(getFieldName(field), Double.class, "Double", "");
+        return new Field(getFieldName(field), TypeName.get(Double.class), "Double", "");
       case BOOLEAN:
-        return new Field(getFieldName(field), Boolean.class, "Boolean", "");
+        return new Field(getFieldName(field), TypeName.get(Boolean.class), "Boolean", "");
       case STRING:
         if (field.isRepeated()) {
-          return new Field(getFieldName(field), List.class, "List<String>", "");
+          return new Field(
+              getFieldName(field),
+              ParameterizedTypeName.get(List.class, String.class),
+              "List<String>",
+              "");
         } else {
-          return new Field(getFieldName(field), String.class, "String", "");
+          return new Field(getFieldName(field), TypeName.get(String.class), "String", "");
         }
       case BYTE_STRING:
         throw new UnsupportedOperationException("Unsupported Java Type: BYTE_STRING");
       case ENUM:
         return new Field(
             getFieldName(field),
-            Class.forName(field.getEnumType().getFullName()),
+            TypeName.get(Class.forName(field.getEnumType().getFullName())),
             field.getEnumType().getName(),
             field.getEnumType().getFullName());
       case MESSAGE:
@@ -112,13 +117,13 @@ public final class ProtoToPojo {
         if (field.isRepeated()) {
           return new Field(
               getFieldName(field),
-              List.class,
+              ParameterizedTypeName.get(List.class, Class.forName(typeFullName)),
               "List<" + field.getMessageType().getName() + ">",
               typeFullName);
         } else {
           return new Field(
               getFieldName(field),
-              Class.forName(typeFullName),
+              TypeName.get(Class.forName(typeFullName)),
               field.getMessageType().getName(),
               typeFullName);
         }
@@ -143,7 +148,7 @@ public final class ProtoToPojo {
     });
     methodsBuilder.add(overrideToString(
         className,
-        fields.stream().collect(toImmutableMap(f -> f.name, f -> f.type.equals(String.class)))));
+        fields.stream().collect(toImmutableMap(f -> f.name, f -> f.type.equals(STRING)))));
     return new JavaPoetClassGenerator(packageName, true)
         .generate(builder(className)
             .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -157,11 +162,11 @@ public final class ProtoToPojo {
   private static class Field {
 
     private final String name;
-    private final Type type;
+    private final TypeName type;
     private final String typeName;
     private final String fullType;
 
-    public Field(String name, Type type, String typeName, String fullType) {
+    public Field(String name, TypeName type, String typeName, String fullType) {
       this.name = name;
       this.type = type;
       this.typeName = typeName;

@@ -3,8 +3,8 @@ package com.volmyr.java_source_utils;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.lang.model.element.Modifier;
@@ -56,7 +56,7 @@ public final class JavaPoetClassGenerator {
         .build();
   }
 
-  public static MethodSpec getGetter(Type fieldType, String fieldName) {
+  public static MethodSpec getGetter(TypeName fieldType, String fieldName) {
     return MethodSpec.methodBuilder(fieldToMethod("get", fieldName))
         .addModifiers(Modifier.PUBLIC)
         .returns(fieldType)
@@ -64,7 +64,7 @@ public final class JavaPoetClassGenerator {
         .build();
   }
 
-  public static MethodSpec getSetter(Type fieldType, String fieldName) {
+  public static MethodSpec getSetter(TypeName fieldType, String fieldName) {
     return MethodSpec.methodBuilder(fieldToMethod("set", fieldName))
         .addModifiers(Modifier.PUBLIC)
         .addParameter(fieldType, fieldName)
@@ -78,11 +78,11 @@ public final class JavaPoetClassGenerator {
         + fieldName.substring(1);
   }
 
-  public static FieldSpec getPrivateField(Type fieldType, String fieldName) {
+  public static FieldSpec getPrivateField(TypeName fieldType, String fieldName) {
     return getPrivateField(fieldType, fieldName, false);
   }
 
-  public static FieldSpec getPrivateField(Type fieldType, String fieldName, boolean isFinal) {
+  public static FieldSpec getPrivateField(TypeName fieldType, String fieldName, boolean isFinal) {
     if (isFinal) {
       return FieldSpec.builder(fieldType, fieldName)
           .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
