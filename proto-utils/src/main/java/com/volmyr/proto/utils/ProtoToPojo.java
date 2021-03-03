@@ -84,48 +84,67 @@ public final class ProtoToPojo {
       throws ClassNotFoundException {
     switch (field.getJavaType()) {
       case INT:
-        return new Field(getFieldName(field), TypeName.get(Integer.class), "Integer", "");
+        if (field.isRepeated()) {
+          return new Field(
+              getFieldName(field), ParameterizedTypeName.get(List.class, Integer.class));
+        } else {
+          return new Field(getFieldName(field), TypeName.get(Integer.class));
+        }
       case LONG:
-        return new Field(getFieldName(field), TypeName.get(Long.class), "Long", "");
+        if (field.isRepeated()) {
+          return new Field(getFieldName(field), ParameterizedTypeName.get(List.class, Long.class));
+        } else {
+          return new Field(getFieldName(field), TypeName.get(Long.class));
+        }
       case FLOAT:
-        return new Field(getFieldName(field), TypeName.get(Float.class), "Float", "");
+        if (field.isRepeated()) {
+          return new Field(getFieldName(field), ParameterizedTypeName.get(List.class, Float.class));
+        } else {
+          return new Field(getFieldName(field), TypeName.get(Float.class));
+        }
       case DOUBLE:
-        return new Field(getFieldName(field), TypeName.get(Double.class), "Double", "");
+        if (field.isRepeated()) {
+          return new Field(
+              getFieldName(field), ParameterizedTypeName.get(List.class, Double.class));
+        } else {
+          return new Field(getFieldName(field), TypeName.get(Double.class));
+        }
       case BOOLEAN:
-        return new Field(getFieldName(field), TypeName.get(Boolean.class), "Boolean", "");
+        if (field.isRepeated()) {
+          return new Field(
+              getFieldName(field), ParameterizedTypeName.get(List.class, Boolean.class));
+        } else {
+          return new Field(getFieldName(field), TypeName.get(Boolean.class));
+        }
       case STRING:
         if (field.isRepeated()) {
           return new Field(
-              getFieldName(field),
-              ParameterizedTypeName.get(List.class, String.class),
-              "List<String>",
-              "");
+              getFieldName(field), ParameterizedTypeName.get(List.class, String.class));
         } else {
-          return new Field(getFieldName(field), TypeName.get(String.class), "String", "");
+          return new Field(getFieldName(field), TypeName.get(String.class));
         }
       case BYTE_STRING:
         throw new UnsupportedOperationException("Unsupported Java Type: BYTE_STRING");
       case ENUM:
-        return new Field(
-            getFieldName(field),
-            TypeName.get(Class.forName(field.getEnumType().getFullName())),
-            field.getEnumType().getName(),
-            field.getEnumType().getFullName());
-      case MESSAGE:
         String typeFullName = message.getClass().getPackage().getName()
+            + "." + field.getEnumType().getName();
+        if (field.isRepeated()) {
+          return new Field(
+              getFieldName(field),
+              ParameterizedTypeName.get(List.class, Class.forName(typeFullName)));
+        } else {
+          return new Field(getFieldName(field), TypeName.get(Class.forName(typeFullName)));
+        }
+      case MESSAGE:
+        typeFullName = message.getClass().getPackage().getName()
             + "." + field.getMessageType().getName();
         if (field.isRepeated()) {
           return new Field(
               getFieldName(field),
-              ParameterizedTypeName.get(List.class, Class.forName(typeFullName)),
-              "List<" + field.getMessageType().getName() + ">",
-              typeFullName);
+              ParameterizedTypeName.get(List.class, Class.forName(typeFullName)));
         } else {
           return new Field(
-              getFieldName(field),
-              TypeName.get(Class.forName(typeFullName)),
-              field.getMessageType().getName(),
-              typeFullName);
+              getFieldName(field), TypeName.get(Class.forName(typeFullName)));
         }
       default:
         throw new UnsupportedOperationException("Unsupported Java Type: " + field.getJavaType());
@@ -163,24 +182,10 @@ public final class ProtoToPojo {
 
     private final String name;
     private final TypeName type;
-    private final String typeName;
-    private final String fullType;
 
-    public Field(String name, TypeName type, String typeName, String fullType) {
+    public Field(String name, TypeName type) {
       this.name = name;
       this.type = type;
-      this.typeName = typeName;
-      this.fullType = fullType;
-    }
-
-    @Override
-    public String toString() {
-      return "Field{" +
-          "name='" + name + '\'' +
-          ", type=" + type +
-          ", typeName='" + typeName + '\'' +
-          ", fullType='" + fullType + '\'' +
-          '}';
     }
   }
 }

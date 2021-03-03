@@ -11,6 +11,12 @@ public final class EmployeePojo {
 
   private List<Address> addresses;
 
+  private Integer age;
+
+  private Sex sex;
+
+  private Long id;
+
   public String getFirstName() {
     return firstName;
   }
@@ -43,6 +49,30 @@ public final class EmployeePojo {
     this.addresses = addresses;
   }
 
+  public Integer getAge() {
+    return age;
+  }
+
+  public void setAge(Integer age) {
+    this.age = age;
+  }
+
+  public Sex getSex() {
+    return sex;
+  }
+
+  public void setSex(Sex sex) {
+    this.sex = sex;
+  }
+
+  public Long getId() {
+    return id;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
+  }
+
   @Override
   public String toString() {
     return "EmployeePojo{" +
@@ -50,6 +80,9 @@ public final class EmployeePojo {
         ", lastName='" + lastName + '\'' +
         ", mainAddress=" + mainAddress +
         ", addresses=" + addresses +
+        ", age=" + age +
+        ", sex=" + sex +
+        ", id=" + id +
         '}';
   }
 }

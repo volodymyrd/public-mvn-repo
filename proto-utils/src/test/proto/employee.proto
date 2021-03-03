@@ -6,6 +6,11 @@ option java_multiple_files = true;
 option java_outer_classname = "EmployeeProto";
 option java_package = "com.volmyr.proto.model.test";
 
+enum Sex {
+  MALE = 0;
+  FEMALE = 1;
+  OTHERS = 2;
+}
 message Address {
   string country = 1;
   string city = 2;
@@ -17,4 +22,7 @@ message Employee {
   string last_name = 2;
   Address main_address = 3;
   repeated Address addresses = 4;
+  int32 age = 5;
+  Sex sex = 7;
+  int64 id = 10;
 }
