@@ -24,6 +24,8 @@ clean {
 dependencies {
     implementation project(':java-source-utils')
 
+    implementation libs.auto_value
+    annotationProcessor libs.auto_value
     implementation libs.guava
     implementation libs.javapoet
     implementation libs.protobuf

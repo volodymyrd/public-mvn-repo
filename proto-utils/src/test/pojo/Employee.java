@@ -1,4 +1,4 @@
-package com.volmyr.proto.model.test;
+package com.volmyr.proto.model.test.org;
 
 import java.util.List;
 

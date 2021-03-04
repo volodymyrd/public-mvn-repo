@@ -8,16 +8,19 @@ import static com.volmyr.java_source_utils.JavaPoetClassGenerator.getPrivateFiel
 import static com.volmyr.java_source_utils.JavaPoetClassGenerator.getSetter;
 import static com.volmyr.java_source_utils.JavaPoetClassGenerator.overrideToString;
 
+import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.MessageOrBuilder;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.volmyr.java_source_utils.JavaPoetClassGenerator;
-import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.lang.model.element.Modifier;
 
 /**
@@ -25,63 +28,102 @@ import javax.lang.model.element.Modifier;
  */
 public final class ProtoToPojo {
 
+  @AutoValue
+  public static abstract class Options {
+
+    public abstract boolean preservingProtoFieldNames();
+
+    public abstract String prefix();
+
+    public abstract String suffix();
+
+    public static Builder builder() {
+      return new AutoValue_ProtoToPojo_Options.Builder();
+    }
+
+    @AutoValue.Builder
+    public interface Builder {
+
+      default Builder withDefaultValues() {
+        return preservingProtoFieldNames(false)
+            .prefix("")
+            .suffix("Pojo");
+      }
+
+      Builder preservingProtoFieldNames(boolean preservingProtoFieldNames);
+
+      Builder prefix(String prefix);
+
+      Builder suffix(String suffix);
+
+      Options build();
+    }
+  }
+
   private static final TypeName STRING = TypeName.get(String.class);
-  private final boolean preservingProtoFieldNames;
-  private final String suffix;
 
-  public ProtoToPojo() {
-    this(false, "Pojo");
+  private final MessageOrBuilder root;
+  private final Options options;
+
+  private final Map<String, String> results = new HashMap<>();
+
+  public ProtoToPojo(String messageClassName, Options options) throws Exception {
+    this.root = getBuilder(messageClassName);
+    this.options = options;
   }
 
-  public ProtoToPojo(boolean preservingProtoFieldNames, String suffix) {
-    this.preservingProtoFieldNames = preservingProtoFieldNames;
-    this.suffix = suffix;
+  public ProtoToPojo generate() throws Exception {
+    generate(root);
+    return this;
   }
 
-  public String generate(MessageOrBuilder message) throws IOException, ClassNotFoundException {
-    ImmutableList<Field> fields = extractFields(message);
-    return generatePojo(
-        message.getClass().getPackage().getName(),
-        message.getDescriptorForType().getName() + suffix,
-        fields);
+  public Map<String, String> getResults() {
+    return ImmutableMap.copyOf(results);
   }
 
-  private ImmutableList<Field> extractFields(MessageOrBuilder message)
-      throws IOException, ClassNotFoundException {
+  private static MessageOrBuilder getBuilder(String messageClassName) throws Exception {
+    Class<?> messageClass = Class.forName(messageClassName);
+    return (MessageOrBuilder) messageClass.getMethod("newBuilder").invoke(null);
+  }
+
+  private void generate(MessageOrBuilder message) throws Exception {
+    String protoFileName = message.getDescriptorForType().getFile().getFullName();
+    String packageName = message.getDescriptorForType().getFile().getOptions().getJavaPackage();
+    String className = options.prefix()
+        + message.getDescriptorForType().getName()
+        + options.suffix();
+    ImmutableList<Field> fields = extractFields(protoFileName, packageName, message);
+    results.put(
+        packageName + "." + className,
+        generatePojo(packageName, className, fields));
+  }
+
+  private ImmutableList<Field> extractFields(
+      String protoFileName,
+      String packageName,
+      MessageOrBuilder message)
+      throws Exception {
     ImmutableList.Builder<Field> fieldsBuilder = ImmutableList.builder();
     for (Descriptors.FieldDescriptor field : message.getDescriptorForType().getFields()) {
-//      if (field.isOptional()) {
-//        if (field.getJavaType() == Descriptors.FieldDescriptor.JavaType.MESSAGE
-//            && !message.hasField(field)) {
-//          // Always skip empty optional message fields. If not we will recurse indefinitely if
-//          // a message has itself as a sub-field.
-//          continue;
-//        }
 //        Descriptors.OneofDescriptor oneof = field.getContainingOneof();
 //        if (oneof != null && !message.hasField(field)) {
-//          // Skip all oneof fields except the one that is actually set
-//          continue;
 //        }
 //      }
-      fieldsBuilder.add(addField(message, field));
+      fieldsBuilder.add(addField(protoFileName, packageName, message, field));
     }
     return fieldsBuilder.build();
   }
 
-//  private Field addField(Descriptors.FieldDescriptor field)
-//      throws IOException, ClassNotFoundException {
-//    return addField(field);
 ////    if (field.isMapField()) {
 ////      //printMapFieldValue(field, value);
-////    } else if (field.isRepeated()) {
-////      //printRepeatedFieldValue(field, value);
-////    } else {
-////      //printSingleFieldValue(field, value);
 ////    }
-//  }
 
-  private Field addField(MessageOrBuilder message, Descriptors.FieldDescriptor field)
-      throws ClassNotFoundException {
+  private Field addField(
+      String protoFileName,
+      String packageName,
+      MessageOrBuilder message,
+      Descriptors.FieldDescriptor field)
+      throws Exception {
     switch (field.getJavaType()) {
       case INT:
         if (field.isRepeated()) {
@@ -126,8 +168,7 @@ public final class ProtoToPojo {
       case BYTE_STRING:
         throw new UnsupportedOperationException("Unsupported Java Type: BYTE_STRING");
       case ENUM:
-        String typeFullName = message.getClass().getPackage().getName()
-            + "." + field.getEnumType().getName();
+        String typeFullName = packageName + "." + field.getEnumType().getName();
         if (field.isRepeated()) {
           return new Field(
               getFieldName(field),
@@ -136,8 +177,11 @@ public final class ProtoToPojo {
           return new Field(getFieldName(field), TypeName.get(Class.forName(typeFullName)));
         }
       case MESSAGE:
-        typeFullName = message.getClass().getPackage().getName()
-            + "." + field.getMessageType().getName();
+        typeFullName = packageName + "." + field.getMessageType().getName();
+        if (field.getFile().getFullName().equals(protoFileName)
+            && results.get(typeFullName) == null) {
+          generate(getBuilder(typeFullName));
+        }
         if (field.isRepeated()) {
           return new Field(
               getFieldName(field),
@@ -152,7 +196,7 @@ public final class ProtoToPojo {
   }
 
   private String getFieldName(Descriptors.FieldDescriptor field) {
-    if (preservingProtoFieldNames) {
+    if (options.preservingProtoFieldNames()) {
       return field.getName();
     } else {
       return field.getJsonName();
