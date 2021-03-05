@@ -9,6 +9,7 @@ import com.volmyr.proto.model.test.org.Employee;
 import com.volmyr.proto.model.test.Person;
 import com.volmyr.proto.utils.ProtoToPojo.Options;
 import java.io.File;
+import java.util.Map;
 import org.junit.Test;
 
 /**
@@ -21,7 +22,8 @@ public class ProtoToPojoTest {
     assertThat(new ProtoToPojo(
         Person.class.getName(),
         Options.builder().withDefaultValues().build())
-        .generate().getResults())
+        .generate()
+        .getResults())
         .containsExactlyInAnyOrderEntriesOf(ImmutableMap.of(
             "com.volmyr.proto.model.test.PersonPojo",
             Files.asCharSource(new File("src/test/pojo/Person.java"), Charsets.UTF_8)
@@ -30,9 +32,21 @@ public class ProtoToPojoTest {
 
   @Test
   public void shouldCreatePojoFromEmployeeProto() throws Exception {
-    assertThat(new ProtoToPojo(Employee.class.getName(),
+    Map<String, String> results = new ProtoToPojo(
+        Employee.class.getName(),
         Options.builder().withDefaultValues().build())
-        .generate().getResults())
+        .generate()
+        .getResults();
+
+    assertThat(results.get("com.volmyr.proto.model.test.org.AddressPojo"))
+        .isEqualTo(Files.asCharSource(new File("src/test/pojo/Address.java"), Charsets.UTF_8)
+            .read());
+
+    assertThat(results.get("com.volmyr.proto.model.test.org.EmployeePojo"))
+        .isEqualTo(Files.asCharSource(new File("src/test/pojo/Employee.java"), Charsets.UTF_8)
+            .read());
+
+    assertThat(results)
         .containsExactlyInAnyOrderEntriesOf(ImmutableMap.of(
             "com.volmyr.proto.model.test.org.AddressPojo",
             Files.asCharSource(new File("src/test/pojo/Address.java"), Charsets.UTF_8)

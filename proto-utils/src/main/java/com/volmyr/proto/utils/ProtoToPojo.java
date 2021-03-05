@@ -196,6 +196,8 @@ public final class ProtoToPojo {
                       .orElseThrow(
                           () -> new IllegalStateException("Not found value for map fields"))
                       .type));
+        } else if (field.getMessageType().getFullName().equals("google.protobuf.Any")) {
+          return new Field(getFieldName(field), TypeName.get(Object.class));
         } else {
           typeFullName = packageName + "." + field.getMessageType().getName();
           if (field.getFile().getFullName().equals(protoFileName)
@@ -207,8 +209,7 @@ public final class ProtoToPojo {
                 getFieldName(field),
                 ParameterizedTypeName.get(List.class, Class.forName(typeFullName)));
           } else {
-            return new Field(
-                getFieldName(field), TypeName.get(Class.forName(typeFullName)));
+            return new Field(getFieldName(field), TypeName.get(Class.forName(typeFullName)));
           }
         }
       default:

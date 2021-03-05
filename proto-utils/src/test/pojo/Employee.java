@@ -18,7 +18,7 @@ public final class EmployeePojo {
 
   private Long id;
 
-  private Map<String, String> attributes;
+  private Map<String, Object> attributes;
 
   public String getFirstName() {
     return firstName;
@@ -76,11 +76,11 @@ public final class EmployeePojo {
     this.id = id;
   }
 
-  public Map<String, String> getAttributes() {
+  public Map<String, Object> getAttributes() {
     return attributes;
   }
 
-  public void setAttributes(Map<String, String> attributes) {
+  public void setAttributes(Map<String, Object> attributes) {
     this.attributes = attributes;
   }
 
