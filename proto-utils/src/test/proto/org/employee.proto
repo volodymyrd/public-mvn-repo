@@ -25,4 +25,5 @@ message Employee {
   int32 age = 5;
   Sex sex = 7;
   int64 id = 10;
+  map<string, string> attributes = 12;
 }

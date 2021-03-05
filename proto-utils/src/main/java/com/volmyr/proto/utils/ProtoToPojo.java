@@ -13,7 +13,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.MessageOrBuilder;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
@@ -24,7 +26,7 @@ import java.util.Map;
 import javax.lang.model.element.Modifier;
 
 /**
- * Create a plain java class from proto message.
+ * Create a plain java class from a proto message.
  */
 public final class ProtoToPojo {
 
@@ -86,7 +88,7 @@ public final class ProtoToPojo {
     return (MessageOrBuilder) messageClass.getMethod("newBuilder").invoke(null);
   }
 
-  private void generate(MessageOrBuilder message) throws Exception {
+  private void generate(MessageOrBuilder message) throws RuntimeException {
     String protoFileName = message.getDescriptorForType().getFile().getFullName();
     String packageName = message.getDescriptorForType().getFile().getOptions().getJavaPackage();
     String className = options.prefix()
@@ -101,29 +103,31 @@ public final class ProtoToPojo {
   private ImmutableList<Field> extractFields(
       String protoFileName,
       String packageName,
-      MessageOrBuilder message)
-      throws Exception {
-    ImmutableList.Builder<Field> fieldsBuilder = ImmutableList.builder();
-    for (Descriptors.FieldDescriptor field : message.getDescriptorForType().getFields()) {
-//        Descriptors.OneofDescriptor oneof = field.getContainingOneof();
-//        if (oneof != null && !message.hasField(field)) {
-//        }
-//      }
-      fieldsBuilder.add(addField(protoFileName, packageName, message, field));
-    }
-    return fieldsBuilder.build();
+      MessageOrBuilder message) throws RuntimeException {
+    return extractFields(protoFileName, packageName, message.getDescriptorForType().getFields());
   }
 
-////    if (field.isMapField()) {
-////      //printMapFieldValue(field, value);
-////    }
-
-  private Field addField(
+  private ImmutableList<Field> extractFields(
       String protoFileName,
       String packageName,
-      MessageOrBuilder message,
+      List<FieldDescriptor> descriptors) throws RuntimeException {
+    return descriptors.stream()
+        .map(field -> {
+          try {
+            return extractField(protoFileName, packageName, field);
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+        })
+        .collect(toImmutableList());
+  }
+
+  private Field extractField(
+      String protoFileName,
+      String packageName,
       Descriptors.FieldDescriptor field)
       throws Exception {
+    // TODO: add support for Oneof: field.getContainingOneof()
     switch (field.getJavaType()) {
       case INT:
         if (field.isRepeated()) {
@@ -177,18 +181,35 @@ public final class ProtoToPojo {
           return new Field(getFieldName(field), TypeName.get(Class.forName(typeFullName)));
         }
       case MESSAGE:
-        typeFullName = packageName + "." + field.getMessageType().getName();
-        if (field.getFile().getFullName().equals(protoFileName)
-            && results.get(typeFullName) == null) {
-          generate(getBuilder(typeFullName));
-        }
-        if (field.isRepeated()) {
+        if (field.isMapField()) {
+          ImmutableList<Field> fields =
+              extractFields(protoFileName, packageName, field.getMessageType().getFields());
+
           return new Field(
               getFieldName(field),
-              ParameterizedTypeName.get(List.class, Class.forName(typeFullName)));
+              ParameterizedTypeName.get(
+                  ClassName.get(Map.class),
+                  fields.stream().filter(f -> f.name.equals("key")).findFirst()
+                      .orElseThrow(() -> new IllegalStateException("Not found key for map fields")).
+                      type,
+                  fields.stream().filter(f -> f.name.equals("value")).findFirst()
+                      .orElseThrow(
+                          () -> new IllegalStateException("Not found value for map fields"))
+                      .type));
         } else {
-          return new Field(
-              getFieldName(field), TypeName.get(Class.forName(typeFullName)));
+          typeFullName = packageName + "." + field.getMessageType().getName();
+          if (field.getFile().getFullName().equals(protoFileName)
+              && results.get(typeFullName) == null) {
+            generate(getBuilder(typeFullName));
+          }
+          if (field.isRepeated()) {
+            return new Field(
+                getFieldName(field),
+                ParameterizedTypeName.get(List.class, Class.forName(typeFullName)));
+          } else {
+            return new Field(
+                getFieldName(field), TypeName.get(Class.forName(typeFullName)));
+          }
         }
       default:
         throw new UnsupportedOperationException("Unsupported Java Type: " + field.getJavaType());

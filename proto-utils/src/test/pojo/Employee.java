@@ -1,6 +1,7 @@
 package com.volmyr.proto.model.test.org;
 
 import java.util.List;
+import java.util.Map;
 
 public final class EmployeePojo {
   private String firstName;
@@ -16,6 +17,8 @@ public final class EmployeePojo {
   private Sex sex;
 
   private Long id;
+
+  private Map<String, String> attributes;
 
   public String getFirstName() {
     return firstName;
@@ -73,6 +76,14 @@ public final class EmployeePojo {
     this.id = id;
   }
 
+  public Map<String, String> getAttributes() {
+    return attributes;
+  }
+
+  public void setAttributes(Map<String, String> attributes) {
+    this.attributes = attributes;
+  }
+
   @Override
   public String toString() {
     return "EmployeePojo{" +
@@ -83,6 +94,7 @@ public final class EmployeePojo {
         ", age=" + age +
         ", sex=" + sex +
         ", id=" + id +
+        ", attributes=" + attributes +
         '}';
   }
 }
