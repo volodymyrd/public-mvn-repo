@@ -6,13 +6,14 @@ import "google/protobuf/any.proto";
 
 option java_multiple_files = true;
 option java_outer_classname = "EmployeeProto";
-option java_package = "com.volmyr.proto.model.test.org";
+option java_package = "com.volmyr.proto.model.test.org.employee";
 
 enum Sex {
   MALE = 0;
   FEMALE = 1;
   OTHERS = 2;
 }
+
 message Address {
   string country = 1;
   string city = 2;
@@ -27,5 +28,6 @@ message Employee {
   int32 age = 5;
   Sex sex = 7;
   int64 id = 10;
+  bool active = 11;
   map<string, google.protobuf.Any> attributes = 12;
 }

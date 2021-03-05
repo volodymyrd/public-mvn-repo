@@ -1,4 +1,4 @@
-package com.volmyr.proto.model.test.org;
+package com.volmyr.proto.model.test.org.employee;
 
 import java.util.List;
 import java.util.Map;
@@ -8,15 +8,17 @@ public final class EmployeePojo {
 
   private String lastName;
 
-  private Address mainAddress;
+  private AddressPojo mainAddress;
 
-  private List<Address> addresses;
+  private List<AddressPojo> addresses;
 
   private Integer age;
 
   private Sex sex;
 
   private Long id;
+
+  private Boolean active;
 
   private Map<String, Object> attributes;
 
@@ -36,19 +38,19 @@ public final class EmployeePojo {
     this.lastName = lastName;
   }
 
-  public Address getMainAddress() {
+  public AddressPojo getMainAddress() {
     return mainAddress;
   }
 
-  public void setMainAddress(Address mainAddress) {
+  public void setMainAddress(AddressPojo mainAddress) {
     this.mainAddress = mainAddress;
   }
 
-  public List<Address> getAddresses() {
+  public List<AddressPojo> getAddresses() {
     return addresses;
   }
 
-  public void setAddresses(List<Address> addresses) {
+  public void setAddresses(List<AddressPojo> addresses) {
     this.addresses = addresses;
   }
 
@@ -76,6 +78,14 @@ public final class EmployeePojo {
     this.id = id;
   }
 
+  public Boolean getActive() {
+    return active;
+  }
+
+  public void setActive(Boolean active) {
+    this.active = active;
+  }
+
   public Map<String, Object> getAttributes() {
     return attributes;
   }
@@ -94,6 +104,7 @@ public final class EmployeePojo {
         ", age=" + age +
         ", sex=" + sex +
         ", id=" + id +
+        ", active=" + active +
         ", attributes=" + attributes +
         '}';
   }

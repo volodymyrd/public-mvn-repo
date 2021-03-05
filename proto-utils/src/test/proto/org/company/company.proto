@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package model.test.org;
+
+import "google/protobuf/any.proto";
+import "org/employee/employee.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "CompanyProto";
+option java_package = "com.volmyr.proto.model.test.org.company";
+
+message Company {
+  int64 id = 1;
+  string name = 2;
+  map<string, google.protobuf.Any> attributes = 12;
+  repeated Employee employees = 20;
+}

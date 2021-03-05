@@ -2,6 +2,7 @@ package com.volmyr.proto.utils;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
+import static com.squareup.javapoet.ClassName.OBJECT;
 import static com.volmyr.java_source_utils.JavaPoetClassGenerator.builder;
 import static com.volmyr.java_source_utils.JavaPoetClassGenerator.getGetter;
 import static com.volmyr.java_source_utils.JavaPoetClassGenerator.getPrivateField;
@@ -197,19 +198,23 @@ public final class ProtoToPojo {
                           () -> new IllegalStateException("Not found value for map fields"))
                       .type));
         } else if (field.getMessageType().getFullName().equals("google.protobuf.Any")) {
-          return new Field(getFieldName(field), TypeName.get(Object.class));
+          return new Field(getFieldName(field), OBJECT);
         } else {
-          typeFullName = packageName + "." + field.getMessageType().getName();
-          if (field.getFile().getFullName().equals(protoFileName)
-              && results.get(typeFullName) == null) {
-            generate(getBuilder(typeFullName));
+          String packageNameType = field.getMessageType().getFile().getOptions().getJavaPackage();
+          String classNameTypeProto = field.getMessageType().getName();
+          String classNameTypePojo = options.prefix() + classNameTypeProto + options.suffix();
+          String typeFullNameProto = packageNameType + "." + classNameTypeProto;
+          if (field.getMessageType().getFile().getFullName().equals(protoFileName)
+              && results.get(typeFullNameProto) == null) {
+            generate(getBuilder(typeFullNameProto));
           }
+          ClassName className = ClassName.get(packageNameType, classNameTypePojo);
           if (field.isRepeated()) {
             return new Field(
                 getFieldName(field),
-                ParameterizedTypeName.get(List.class, Class.forName(typeFullName)));
+                ParameterizedTypeName.get(ClassName.get(List.class), className));
           } else {
-            return new Field(getFieldName(field), TypeName.get(Class.forName(typeFullName)));
+            return new Field(getFieldName(field), className);
           }
         }
       default:

@@ -1,4 +1,4 @@
-package com.volmyr.proto.model.test.org;
+package com.volmyr.proto.model.test.org.employee;
 
 public final class AddressPojo {
   private String country;
