@@ -23,6 +23,7 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.volmyr.java_source_utils.JavaPoetClassGenerator;
 import java.io.File;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
@@ -117,9 +118,15 @@ public final class ProtoToPojo {
       if (!protoDir.exists() || !protoDir.isDirectory()) {
         throw new IllegalArgumentException("Not found a proto dir " + protoDir.getAbsolutePath());
       }
-      ClassLoader classLoader = new URLClassLoader(new URL[]{protoDir.toURI().toURL()});
-      classLoader.loadClass(messageClassName);
-      return Class.forName(messageClassName, false, classLoader);
+      URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+      Class<?> urlClass = URLClassLoader.class;
+      Method method = urlClass.getDeclaredMethod("addURL", URL.class);
+      method.setAccessible(true);
+      method.invoke(urlClassLoader, protoDir.toURI().toURL());
+
+      //ClassLoader classLoader = new URLClassLoader(new URL[]{protoDir.toURI().toURL()});
+      urlClassLoader.loadClass(messageClassName);
+      return Class.forName(messageClassName);
     }
   }
 
