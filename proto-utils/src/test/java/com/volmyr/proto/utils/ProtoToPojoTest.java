@@ -30,6 +30,20 @@ public class ProtoToPojoTest {
   }
 
   @Test
+  public void shouldCreatePojoWithDocFromPersonProto() throws Exception {
+    assertThat(new ProtoToPojo(Person.class.getName(), Options.builder()
+        .withDefaultValues()
+        .doc("This class was created automatically from proto file $S.")
+        .build())
+        .generate()
+        .getResults())
+        .containsExactlyInAnyOrderEntriesOf(ImmutableMap.of(
+            "com.volmyr.proto.model.test.PersonPojo",
+            Files.asCharSource(new File("src/test/pojo/PersonWithDoc.java"), Charsets.UTF_8)
+                .read()));
+  }
+
+  @Test
   public void shouldCreatePojoFromCompanyProto() throws Exception {
     Map<String, String> results = new ProtoToPojo(Company.class.getName())
         .generate()
