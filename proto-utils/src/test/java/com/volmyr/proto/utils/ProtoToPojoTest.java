@@ -20,9 +20,7 @@ public class ProtoToPojoTest {
 
   @Test
   public void shouldCreatePojoFromPersonProto() throws Exception {
-    assertThat(new ProtoToPojo(
-        Person.class.getName(),
-        Options.builder().withDefaultValues().build())
+    assertThat(new ProtoToPojo(Person.class.getName())
         .generate()
         .getResults())
         .containsExactlyInAnyOrderEntriesOf(ImmutableMap.of(
@@ -33,9 +31,7 @@ public class ProtoToPojoTest {
 
   @Test
   public void shouldCreatePojoFromCompanyProto() throws Exception {
-    Map<String, String> results = new ProtoToPojo(
-        Company.class.getName(),
-        Options.builder().withDefaultValues().build())
+    Map<String, String> results = new ProtoToPojo(Company.class.getName())
         .generate()
         .getResults();
 
@@ -48,9 +44,7 @@ public class ProtoToPojoTest {
 
   @Test
   public void shouldCreatePojoFromEmployeeProto() throws Exception {
-    Map<String, String> results = new ProtoToPojo(
-        Employee.class.getName(),
-        Options.builder().withDefaultValues().build())
+    Map<String, String> results = new ProtoToPojo(Employee.class.getName())
         .generate()
         .getResults();
 
@@ -71,5 +65,22 @@ public class ProtoToPojoTest {
             Files.asCharSource(new File("src/test/pojo/Employee.java"), Charsets.UTF_8)
                 .read()
         ));
+  }
+
+  @Test
+  public void shouldCreatePojoFromExternalProto() throws Exception {
+    File protoDir = new File("../proto-test-model/target/classes/java/main");
+    assertThat(new ProtoToPojo(
+        "com.volmyr.test.proto.model.MessagePayload",
+        Options.builder()
+            .protoDir(protoDir.getAbsolutePath())
+            .withDefaultValues()
+            .build())
+        .generate()
+        .getResults())
+        .containsExactlyInAnyOrderEntriesOf(ImmutableMap.of(
+            "com.volmyr.test.proto.model.MessagePayloadPojo",
+            Files.asCharSource(new File("src/test/pojo/MessagePayload.java"), Charsets.UTF_8)
+                .read()));
   }
 }

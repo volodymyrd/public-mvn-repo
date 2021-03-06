@@ -1,0 +1,25 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath libs.protobuf_gradle
+    }
+}
+
+apply plugin: 'com.google.protobuf'
+
+protobuf {
+    generatedFilesBaseDir = "$projectDir/src/main/generated"
+    protoc {
+        artifact = libs.protoc
+    }
+}
+
+clean {
+    delete protobuf.generatedFilesBaseDir
+}
+
+dependencies {
+    implementation libs.protobuf
+}

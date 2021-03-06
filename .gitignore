@@ -17,6 +17,11 @@ oauth2-utils/out/
 oauth2-utils/src/main/generated/
 oauth2-utils/generated/
 
+proto-test-model/target/
+proto-test-model/out/
+proto-test-model/src/main/generated/
+proto-test-model/generated/
+
 proto-utils/target/
 proto-utils/out/
 proto-utils/src/main/generated/

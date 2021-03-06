@@ -1,5 +1,6 @@
 package com.volmyr.proto.utils;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static com.squareup.javapoet.ClassName.OBJECT;
@@ -21,9 +22,13 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.volmyr.java_source_utils.JavaPoetClassGenerator;
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.annotation.Nullable;
 import javax.lang.model.element.Modifier;
 
 /**
@@ -33,6 +38,9 @@ public final class ProtoToPojo {
 
   @AutoValue
   public static abstract class Options {
+
+    @Nullable
+    public abstract String protoDir();
 
     public abstract boolean preservingProtoFieldNames();
 
@@ -53,6 +61,8 @@ public final class ProtoToPojo {
             .suffix("Pojo");
       }
 
+      Builder protoDir(String prefix);
+
       Builder preservingProtoFieldNames(boolean preservingProtoFieldNames);
 
       Builder prefix(String prefix);
@@ -70,9 +80,13 @@ public final class ProtoToPojo {
 
   private final Map<String, String> results = new HashMap<>();
 
+  public ProtoToPojo(String messageClassName) throws Exception {
+    this(messageClassName, Options.builder().withDefaultValues().build());
+  }
+
   public ProtoToPojo(String messageClassName, Options options) throws Exception {
-    this.root = getBuilder(messageClassName);
     this.options = options;
+    this.root = getBuilder(messageClassName);
   }
 
   public ProtoToPojo generate() throws Exception {
@@ -84,9 +98,22 @@ public final class ProtoToPojo {
     return ImmutableMap.copyOf(results);
   }
 
-  private static MessageOrBuilder getBuilder(String messageClassName) throws Exception {
-    Class<?> messageClass = Class.forName(messageClassName);
-    return (MessageOrBuilder) messageClass.getMethod("newBuilder").invoke(null);
+  private MessageOrBuilder getBuilder(String messageClassName) throws Exception {
+    return (MessageOrBuilder) getProtoClass(messageClassName).getMethod("newBuilder").invoke(null);
+  }
+
+  private Class<?> getProtoClass(String messageClassName) throws Exception {
+    if (isNullOrEmpty(options.protoDir())) {
+      return Class.forName(messageClassName);
+    } else {
+      File protoDir = new File(options.protoDir());
+      if (!protoDir.exists() || !protoDir.isDirectory()) {
+        throw new IllegalArgumentException("Not found a proto dir " + protoDir.getAbsolutePath());
+      }
+      ClassLoader classLoader = new URLClassLoader(new URL[]{protoDir.toURI().toURL()});
+      classLoader.loadClass(messageClassName);
+      return Class.forName(messageClassName, false, classLoader);
+    }
   }
 
   private void generate(MessageOrBuilder message) throws RuntimeException {
