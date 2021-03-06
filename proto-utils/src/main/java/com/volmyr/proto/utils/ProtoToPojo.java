@@ -118,7 +118,8 @@ public final class ProtoToPojo {
       if (!protoDir.exists() || !protoDir.isDirectory()) {
         throw new IllegalArgumentException("Not found a proto dir " + protoDir.getAbsolutePath());
       }
-      URLClassLoader urlClassLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
+      URLClassLoader urlClassLoader = (URLClassLoader) Thread.currentThread()
+          .getContextClassLoader();
       Class<?> urlClass = URLClassLoader.class;
       Method method = urlClass.getDeclaredMethod("addURL", URL.class);
       method.setAccessible(true);
