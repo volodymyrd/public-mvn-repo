@@ -13,7 +13,6 @@ import static com.volmyr.java_source_utils.JavaPoetClassGenerator.overrideToStri
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.MessageOrBuilder;
@@ -41,7 +40,7 @@ public final class ProtoToPojo {
   public static abstract class Options {
 
     @Nullable
-    public abstract String protoDir();
+    public abstract String protoGeneratedFilesDir();
 
     public abstract boolean preservingProtoFieldNames();
 
@@ -65,7 +64,7 @@ public final class ProtoToPojo {
             .suffix("Pojo");
       }
 
-      Builder protoDir(String protoDir);
+      Builder protoGeneratedFilesDir(String protoGeneratedFilesDir);
 
       Builder preservingProtoFieldNames(boolean preservingProtoFieldNames);
 
@@ -79,13 +78,39 @@ public final class ProtoToPojo {
     }
   }
 
+  @AutoValue
+  public static abstract class Result {
+
+    public abstract String packageName();
+
+    public abstract String className();
+
+    public abstract String pojoFile();
+
+    public static Builder builder() {
+      return new AutoValue_ProtoToPojo_Result.Builder();
+    }
+
+    @AutoValue.Builder
+    public abstract static class Builder {
+
+      public abstract Builder packageName(String packageName);
+
+      public abstract Builder className(String className);
+
+      public abstract Builder pojoFile(String pojoFile);
+
+      public abstract Result build();
+    }
+  }
+
   private static final TypeName STRING = TypeName.get(String.class);
 
   private final MessageOrBuilder root;
   private final Options options;
   private final String protoFileName;
 
-  private final Map<String, String> results = new HashMap<>();
+  private final Map<String, Result> results = new HashMap<>();
 
   public ProtoToPojo(String messageClassName) throws Exception {
     this(messageClassName, Options.builder().withDefaultValues().build());
@@ -102,8 +127,8 @@ public final class ProtoToPojo {
     return this;
   }
 
-  public Map<String, String> getResults() {
-    return ImmutableMap.copyOf(results);
+  public ImmutableList<Result> getResults() {
+    return ImmutableList.copyOf(results.values());
   }
 
   private MessageOrBuilder getBuilder(String messageClassName) throws Exception {
@@ -111,10 +136,8 @@ public final class ProtoToPojo {
   }
 
   private Class<?> getTypeClass(String messageClassName) throws Exception {
-    if (isNullOrEmpty(options.protoDir())) {
-      return Class.forName(messageClassName);
-    } else {
-      File protoDir = new File(options.protoDir());
+    if (!isNullOrEmpty(options.protoGeneratedFilesDir())) {
+      File protoDir = new File(options.protoGeneratedFilesDir());
       if (!protoDir.exists() || !protoDir.isDirectory()) {
         throw new IllegalArgumentException("Not found a proto dir " + protoDir.getAbsolutePath());
       }
@@ -124,11 +147,9 @@ public final class ProtoToPojo {
       Method method = urlClass.getDeclaredMethod("addURL", URL.class);
       method.setAccessible(true);
       method.invoke(urlClassLoader, protoDir.toURI().toURL());
-
-      //ClassLoader classLoader = new URLClassLoader(new URL[]{protoDir.toURI().toURL()});
       urlClassLoader.loadClass(messageClassName);
-      return Class.forName(messageClassName);
     }
+    return Class.forName(messageClassName);
   }
 
   private void generate(MessageOrBuilder message) throws RuntimeException {
@@ -139,7 +160,11 @@ public final class ProtoToPojo {
     ImmutableList<Field> fields = extractFields(packageName, message);
     results.put(
         packageName + "." + className,
-        generatePojo(packageName, className, fields));
+        Result.builder()
+            .packageName(packageName)
+            .className(className)
+            .pojoFile(generatePojo(packageName, className, fields))
+            .build());
   }
 
   private ImmutableList<Field> extractFields(String packageName, MessageOrBuilder message)
