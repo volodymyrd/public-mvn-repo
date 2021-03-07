@@ -10,6 +10,7 @@ import com.volmyr.proto.model.test.org.company.Company;
 import com.volmyr.proto.model.test.org.employee.Employee;
 import com.volmyr.proto.utils.ProtoToPojo.Options;
 import java.io.File;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -97,6 +98,7 @@ public class ProtoToPojoTest {
   }
 
   @Test
+  @Ignore
   public void shouldCreatePojoFromExternalProto() throws Exception {
     File protoDir = new File("../proto-test-model/target/classes/java/main");
     ImmutableList<ProtoToPojo.Result> results = new ProtoToPojo(

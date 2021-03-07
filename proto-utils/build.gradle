@@ -34,8 +34,6 @@ dependencies {
     testImplementation libs.test
     testImplementation libs.protobuf
     testImplementation libs.protobuf_util
-
-    testImplementation project(':proto-test-model')
 }
 
 jar {
