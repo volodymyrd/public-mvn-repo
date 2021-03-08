@@ -40,7 +40,7 @@ public final class ProtoToPojo {
   public static abstract class Options {
 
     @Nullable
-    public abstract String protoGeneratedFilesDir();
+    public abstract String protoCompiledDirOrJar();
 
     public abstract boolean preservingProtoFieldNames();
 
@@ -64,7 +64,7 @@ public final class ProtoToPojo {
             .suffix("Pojo");
       }
 
-      Builder protoGeneratedFilesDir(String protoGeneratedFilesDir);
+      Builder protoCompiledDirOrJar(String protoCompiledDirOrJar);
 
       Builder preservingProtoFieldNames(boolean preservingProtoFieldNames);
 
@@ -136,17 +136,18 @@ public final class ProtoToPojo {
   }
 
   private Class<?> getTypeClass(String messageClassName) throws Exception {
-    if (!isNullOrEmpty(options.protoGeneratedFilesDir())) {
-      File protoDir = new File(options.protoGeneratedFilesDir());
-      if (!protoDir.exists() || !protoDir.isDirectory()) {
-        throw new IllegalArgumentException("Not found a proto dir " + protoDir.getAbsolutePath());
+    if (!isNullOrEmpty(options.protoCompiledDirOrJar())) {
+      File protoDir = new File(options.protoCompiledDirOrJar());
+      if (!protoDir.exists()) {
+        throw new IllegalArgumentException(
+            "Not found a proto dir or jar file" + protoDir.getAbsolutePath());
       }
       URLClassLoader urlClassLoader = (URLClassLoader) Thread.currentThread()
           .getContextClassLoader();
-      Class<?> urlClass = URLClassLoader.class;
-      Method method = urlClass.getDeclaredMethod("addURL", URL.class);
+      Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
       method.setAccessible(true);
       method.invoke(urlClassLoader, protoDir.toURI().toURL());
+
       urlClassLoader.loadClass(messageClassName);
     }
     return Class.forName(messageClassName);

@@ -104,7 +104,30 @@ public class ProtoToPojoTest {
     ImmutableList<ProtoToPojo.Result> results = new ProtoToPojo(
         "com.volmyr.test.proto.model.MessagePayload",
         Options.builder()
-            .protoGeneratedFilesDir(protoDir.getAbsolutePath())
+            .protoCompiledDirOrJar(protoDir.getAbsolutePath())
+            .withDefaultValues()
+            .build())
+        .generate()
+        .getResults();
+
+    assertThat(results).hasSize(1);
+    assertThat(results.get(0)).isEqualTo(
+        ProtoToPojo.Result.builder()
+            .packageName("com.volmyr.test.proto.model")
+            .className("MessagePayloadPojo")
+            .pojoFile(Files
+                .asCharSource(new File("src/test/pojo/MessagePayload.java"), Charsets.UTF_8)
+                .read())
+            .build());
+  }
+
+  @Test
+  public void shouldCreatePojoFromExternalJarProto() throws Exception {
+    File protoDir = new File("../proto-test-model/target/libs/proto-test-model-0.0.24-SNAPSHOT.jar");
+    ImmutableList<ProtoToPojo.Result> results = new ProtoToPojo(
+        "com.volmyr.test.proto.model.MessagePayload",
+        Options.builder()
+            .protoCompiledDirOrJar(protoDir.getAbsolutePath())
             .withDefaultValues()
             .build())
         .generate()
