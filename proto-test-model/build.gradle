@@ -23,3 +23,33 @@ clean {
 dependencies {
     implementation libs.protobuf
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'com.volmyr'
+            artifactId = 'proto-test-model'
+            version = version
+            from components.java
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = 'Proto Model for testing porpuses'
+                description = 'Proto Model for testing porpuses'
+                developers {
+                    developer {
+                        id = 'volodymyrd'
+                        name = 'Volodymyr Dotsenko'
+                        email = 'volodymyrdotsenko@volmyr.com'
+                    }
+                }
+            }
+        }
+    }
+}
