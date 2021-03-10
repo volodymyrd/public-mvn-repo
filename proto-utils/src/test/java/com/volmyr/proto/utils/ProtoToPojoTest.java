@@ -122,6 +122,7 @@ public class ProtoToPojoTest {
   }
 
   @Test
+  @Ignore
   public void shouldCreatePojoFromExternalJarProto() throws Exception {
     File protoDir = new File("../proto-test-model/target/libs/proto-test-model-0.0.24-SNAPSHOT.jar");
     ImmutableList<ProtoToPojo.Result> results = new ProtoToPojo(
