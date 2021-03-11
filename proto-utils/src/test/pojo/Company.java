@@ -45,6 +45,27 @@ public final class CompanyPojo {
     this.employees = employees;
   }
 
+  public Company convert() {
+    return Company.newBuilder().build();
+  }
+
+  public static CompanyPojo convert(Company proto) {
+    CompanyPojo pojo = new CompanyPojo();
+    pojo.setId(proto.getId());
+    pojo.setName(proto.getName());
+    pojo.setAttributes(proto.getAttributesMap().entrySet().stream()
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> {
+          try {
+            return e.getValue().unpack(Message.class);
+          } catch (InvalidProtocolBufferException ex) {
+            throw new RuntimeException(ex);
+          }
+        })));
+    pojo.setEmployees(proto.getEmployeesList().stream().map(EmployeePojo::convert)
+        .collect(ImmutableList.toImmutableList()));
+    return pojo;
+  }
+
   @Override
   public String toString() {
     return "CompanyPojo{" +

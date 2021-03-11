@@ -23,6 +23,17 @@ public final class MessagePayloadPojo {
     this.params = params;
   }
 
+  public MessagePayload convert() {
+    return MessagePayload.newBuilder().build();
+  }
+
+  public static MessagePayloadPojo convert(MessagePayload proto) {
+    MessagePayloadPojo pojo = new MessagePayloadPojo();
+    pojo.setName(proto.getName());
+    pojo.setParams(proto.getParamsMap());
+    return pojo;
+  }
+
   @Override
   public String toString() {
     return "MessagePayloadPojo{" +

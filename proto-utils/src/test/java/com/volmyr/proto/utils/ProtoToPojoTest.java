@@ -10,7 +10,6 @@ import com.volmyr.proto.model.test.org.company.Company;
 import com.volmyr.proto.model.test.org.employee.Employee;
 import com.volmyr.proto.utils.ProtoToPojo.Options;
 import java.io.File;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -79,6 +78,29 @@ public class ProtoToPojoTest {
 
     assertThat(results).hasSize(2);
 
+    assertThat(results.stream().filter(e -> e.className().equals("AddressPojo"))
+        .findFirst()
+        .orElseThrow(IllegalStateException::new))
+        .isEqualTo(
+            ProtoToPojo.Result.builder()
+                .packageName("com.volmyr.proto.model.test.org.employee")
+                .className("AddressPojo")
+                .pojoFile(Files.asCharSource(new File("src/test/pojo/Address.java"), Charsets.UTF_8)
+                    .read())
+                .build());
+
+    assertThat(results.stream().filter(e -> e.className().equals("EmployeePojo"))
+        .findFirst()
+        .orElseThrow(IllegalStateException::new))
+        .isEqualTo(
+            ProtoToPojo.Result.builder()
+                .packageName("com.volmyr.proto.model.test.org.employee")
+                .className("EmployeePojo")
+                .pojoFile(
+                    Files.asCharSource(new File("src/test/pojo/Employee.java"), Charsets.UTF_8)
+                        .read())
+                .build());
+
     assertThat(results)
         .containsExactlyElementsOf(ImmutableList.of(
             ProtoToPojo.Result.builder()
@@ -98,7 +120,6 @@ public class ProtoToPojoTest {
   }
 
   @Test
-  @Ignore
   public void shouldCreatePojoFromExternalProto() throws Exception {
     File protoDir = new File("../proto-test-model/target/classes/java/main");
     ImmutableList<ProtoToPojo.Result> results = new ProtoToPojo(
@@ -122,9 +143,9 @@ public class ProtoToPojoTest {
   }
 
   @Test
-  @Ignore
   public void shouldCreatePojoFromExternalJarProto() throws Exception {
-    File protoDir = new File("../proto-test-model/target/libs/proto-test-model-0.0.24-SNAPSHOT.jar");
+    File protoDir = new File(
+        "../proto-test-model/target/libs/proto-test-model-0.0.26-SNAPSHOT.jar");
     ImmutableList<ProtoToPojo.Result> results = new ProtoToPojo(
         "com.volmyr.test.proto.model.MessagePayload",
         Options.builder()

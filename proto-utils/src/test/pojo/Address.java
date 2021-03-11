@@ -31,6 +31,18 @@ public final class AddressPojo {
     this.address = address;
   }
 
+  public Address convert() {
+    return Address.newBuilder().build();
+  }
+
+  public static AddressPojo convert(Address proto) {
+    AddressPojo pojo = new AddressPojo();
+    pojo.setCountry(proto.getCountry());
+    pojo.setCity(proto.getCity());
+    pojo.setAddress(proto.getAddress());
+    return pojo;
+  }
+
   @Override
   public String toString() {
     return "AddressPojo{" +

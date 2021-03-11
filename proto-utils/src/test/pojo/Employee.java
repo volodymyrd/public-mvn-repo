@@ -1,5 +1,6 @@
 package com.volmyr.proto.model.test.org.employee;
 
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
 
@@ -92,6 +93,31 @@ public final class EmployeePojo {
 
   public void setAttributes(Map<String, Object> attributes) {
     this.attributes = attributes;
+  }
+
+  public Employee convert() {
+    return Employee.newBuilder().build();
+  }
+
+  public static EmployeePojo convert(Employee proto) {
+    EmployeePojo pojo = new EmployeePojo();
+    pojo.setFirstName(proto.getFirstName());
+    pojo.setLastName(proto.getLastName());
+    pojo.setMainAddress(AddressPojo.convert(proto.getMainAddress()));
+    pojo.setAddresses(proto.getAddressesList().stream().map(AddressPojo::convert).collect(ImmutableList.toImmutableList()));
+    pojo.setAge(proto.getAge());
+    pojo.setSex(proto.getSex());
+    pojo.setId(proto.getId());
+    pojo.setActive(proto.getActive());
+    pojo.setAttributes(proto.getAttributesMap().entrySet().stream()
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> {
+          try {
+            return e.getValue().unpack(Message.class);
+          } catch (InvalidProtocolBufferException ex) {
+            throw new RuntimeException(ex);
+          }
+        })));
+    return pojo;
   }
 
   @Override

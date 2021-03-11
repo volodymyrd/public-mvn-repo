@@ -72,10 +72,15 @@ public final class JavaPoetClassGenerator {
         .build();
   }
 
-  static String fieldToMethod(String prefix, String fieldName) {
+  public static String fieldToMethod(String prefix, String fieldName) {
+    return fieldToMethod(prefix, fieldName, "");
+  }
+
+  public static String fieldToMethod(String prefix, String fieldName, String suffix) {
     return prefix
         + fieldName.substring(0, 1).toUpperCase()
-        + fieldName.substring(1);
+        + fieldName.substring(1)
+        + suffix;
   }
 
   public static FieldSpec getPrivateField(TypeName fieldType, String fieldName) {
