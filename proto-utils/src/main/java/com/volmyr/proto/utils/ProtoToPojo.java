@@ -302,10 +302,18 @@ public final class ProtoToPojo {
           //return new Field(getFieldName(field), OBJECT);
         } else {
           String packageNameType = field.getMessageType().getFile().getOptions().getJavaPackage();
-          // TODO nested type: field.getMessageType().getFile().getContainingType() != null
           String classNameTypeProto = field.getMessageType().getName();
           String classNameTypePojo = options.prefix() + classNameTypeProto + options.suffix();
-          String typeFullNameProto = packageNameType + "." + classNameTypeProto;
+          String typeFullNameProto;
+          if (field.getMessageType().getContainingType() != null
+              && !field.getMessageType().getContainingType().getName().isEmpty()) {
+            typeFullNameProto = packageNameType + "."
+                + field.getMessageType().getContainingType().getName() + "$"
+                + classNameTypeProto;
+
+          } else {
+            typeFullNameProto = packageNameType + "." + classNameTypeProto;
+          }
           if (field.getMessageType().getFile().getFullName().equals(protoFileName)
               && results.get(typeFullNameProto) == null) {
             generate(classNameTypeProto, getBuilder(typeFullNameProto));

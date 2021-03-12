@@ -6,6 +6,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import com.volmyr.proto.model.test.Person;
+import com.volmyr.proto.model.test.PersonExt;
 import com.volmyr.proto.model.test.org.company.Company;
 import com.volmyr.proto.model.test.org.employee.Employee;
 import com.volmyr.proto.utils.ProtoToPojo.Options;
@@ -117,6 +118,37 @@ public class ProtoToPojoTest {
                         .read())
                 .build()
         ));
+  }
+
+  @Test
+  public void shouldCreatePojoFromPersonExtProto() throws Exception {
+    ImmutableList<ProtoToPojo.Result> results = new ProtoToPojo(PersonExt.class.getName())
+        .generate()
+        .getResults();
+
+    assertThat(results).hasSize(2);
+    assertThat(results.stream().filter(e -> e.className().equals("PersonExtPojo"))
+        .findFirst()
+        .orElseThrow(IllegalStateException::new))
+        .isEqualTo(
+            ProtoToPojo.Result.builder()
+                .packageName("com.volmyr.proto.model.test")
+                .className("PersonExtPojo")
+                .pojoFile(
+                    Files.asCharSource(new File("src/test/pojo/PersonExt.java"), Charsets.UTF_8)
+                        .read())
+                .build());
+    assertThat(results.stream().filter(e -> e.className().equals("MetadataPojo"))
+        .findFirst()
+        .orElseThrow(IllegalStateException::new))
+        .isEqualTo(
+            ProtoToPojo.Result.builder()
+                .packageName("com.volmyr.proto.model.test")
+                .className("MetadataPojo")
+                .pojoFile(
+                    Files.asCharSource(new File("src/test/pojo/MetadataPojo.java"), Charsets.UTF_8)
+                        .read())
+                .build());
   }
 
   @Test

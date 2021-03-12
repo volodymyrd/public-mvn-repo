@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package model.test;
+
+option java_multiple_files = true;
+option java_outer_classname = "PersonExtProto";
+option java_package = "com.volmyr.proto.model.test";
+
+message PersonExt {
+  message Metadata {
+//    message Metadata1 {
+//      string prop = 1;
+//    }
+//    message Metadata2 {
+//      string prop = 1;
+//    }
+//    Metadata1 metadata1 = 1;
+//    Metadata2 metadata2 = 2;
+    string prop = 3;
+  }
+  string first_name = 1;
+  string last_name = 2;
+  repeated string phones = 3;
+  map<string, string> ids = 4;
+  Metadata metadata = 10;
+}
