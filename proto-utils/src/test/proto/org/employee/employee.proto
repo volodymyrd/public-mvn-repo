@@ -29,6 +29,6 @@ message Employee {
   Sex sex = 7;
   int64 id = 10;
   bool active = 11;
-  map<string, google.protobuf.Any> attributes = 12;
+  map<string, Sex> attributes = 12;
   map<string, Address> contacts = 13;
 }

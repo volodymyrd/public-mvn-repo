@@ -32,7 +32,15 @@ public final class AddressPojo {
   }
 
   public Address convert() {
-    return Address.newBuilder().build();
+    Address defaultInstance = Address.getDefaultInstance();
+    return Address.newBuilder()
+        .setCountry(this.country != null
+            ? this.country : defaultInstance.getCountry())
+        .setCity(this.city != null
+            ? this.city : defaultInstance.getCity())
+        .setAddress(this.address != null
+            ? this.address : defaultInstance.getAddress())
+        .build();
   }
 
   public static AddressPojo convert(Address proto) {

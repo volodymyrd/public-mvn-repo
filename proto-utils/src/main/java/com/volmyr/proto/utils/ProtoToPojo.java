@@ -3,7 +3,6 @@ package com.volmyr.proto.utils;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
-import static com.squareup.javapoet.ClassName.OBJECT;
 import static com.volmyr.java_source_utils.JavaPoetClassGenerator.builder;
 import static com.volmyr.java_source_utils.JavaPoetClassGenerator.fieldToMethod;
 import static com.volmyr.java_source_utils.JavaPoetClassGenerator.getGetter;
@@ -15,11 +14,13 @@ import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
+import com.google.protobuf.Any;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
+import com.google.protobuf.Value;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
@@ -288,7 +289,8 @@ public final class ProtoToPojo {
                           () -> new IllegalStateException("Not found value for map fields"))
                       .type));
         } else if (field.getMessageType().getFullName().equals("google.protobuf.Any")) {
-          return new Field(getFieldName(field), OBJECT);
+          throw new UnsupportedOperationException("Not supported proto type: google.protobuf.Any");
+          //return new Field(getFieldName(field), OBJECT);
         } else {
           String packageNameType = field.getMessageType().getFile().getOptions().getJavaPackage();
           String classNameTypeProto = field.getMessageType().getName();
@@ -331,7 +333,7 @@ public final class ProtoToPojo {
       methodsBuilder.add(getSetter(f.type, f.name));
     });
     methodsBuilder.add(
-        buildConvertToProtoMethod(packageName, protoClassName, pojoClassName, fields));
+        buildConvertToProtoMethod(packageName, protoClassName, fields));
     methodsBuilder.add(
         buildConvertFromProtoMethod(packageName, protoClassName, pojoClassName, fields));
     methodsBuilder.add(overrideToString(
@@ -352,19 +354,80 @@ public final class ProtoToPojo {
   private MethodSpec buildConvertToProtoMethod(
       String packageName,
       String protoClassName,
-      String pojoClassName,
       ImmutableList<Field> fields) {
     ClassName protoClass = ClassName.get(packageName, protoClassName);
-    ClassName pojoClass = ClassName.get(packageName, pojoClassName);
 
-    return MethodSpec.methodBuilder("convert")
+    String defaultInstance = "defaultInstance";
+
+    MethodSpec.Builder builder = MethodSpec.methodBuilder("convert")
         .addModifiers(Modifier.PUBLIC)
         .returns(protoClass)
-        .addStatement(CodeBlock.builder()
-            .add("return ")
-            .add("$L.newBuilder()", protoClassName)
-            .add(".build()")
-            .build())
+        .addStatement("$L $L = $L.getDefaultInstance()",
+            protoClassName, defaultInstance, protoClassName);
+
+    CodeBlock.Builder codeBlockBuilder = CodeBlock.builder();
+    codeBlockBuilder.add("return $L.newBuilder()", protoClassName);
+    fields.forEach(f -> {
+      codeBlockBuilder.add("\n");
+      if (f.type instanceof ParameterizedTypeName
+          && ((ParameterizedTypeName) f.type).rawType.equals(LIST)) {
+        TypeName type = ((ParameterizedTypeName) f.type).typeArguments.get(0);
+        if (isPojo(type.toString(), options)) {
+          codeBlockBuilder
+              .add(".$L(this.$L != null\n", fieldToMethod("addAll", f.name), f.name)
+              .add("    ? this.$L.stream()\n", f.name)
+              .add("    .map($T::convert)\n", type)
+              .add("    .collect($T.toImmutableList())\n", ImmutableList.class)
+              .add("    : $L.$L())", defaultInstance, fieldToMethod("get", f.name, "List"));
+        } else {
+          codeBlockBuilder
+              .add(".$L(this.$L != null\n", fieldToMethod("addAll", f.name), f.name)
+              .add("    ? this.$L : ", f.name)
+              .add("$L.$L())", defaultInstance, fieldToMethod("get", f.name, "List"));
+        }
+      } else if (f.type instanceof ParameterizedTypeName
+          && ((ParameterizedTypeName) f.type).rawType.equals(MAP)) {
+        TypeName type = ((ParameterizedTypeName) f.type).typeArguments.get(1);
+        if (isPojo(type.toString(), options)) {
+          codeBlockBuilder
+              .add(".$L(this.$L != null\n", fieldToMethod("putAll", f.name), f.name)
+              .add("    ? this.$L.entrySet().stream()\n", f.name)
+              .add("    .collect($T.toImmutableMap(", ImmutableMap.class)
+              .add("$T::getKey, e -> e.getValue().convert()))\n", Entry.class)
+              .add("    : $L.$L())", defaultInstance, fieldToMethod("get", f.name, "Map"))
+              .build();
+        } else if (type.equals(TypeName.OBJECT)) {
+          codeBlockBuilder
+              .add(".$L(this.$L != null\n", fieldToMethod("putAll", f.name), f.name)
+              .add("    ? this.$L.entrySet().stream()\n", f.name)
+              .add("    .collect($T.toImmutableMap(", ImmutableMap.class)
+              .add("$T::getKey, e -> $T.pack($T.newBuilder().build())))\n",
+                  Entry.class, Any.class, Value.class)
+              .add("    : $L.$L())", defaultInstance, fieldToMethod("get", f.name, "Map"))
+              .build();
+        } else {
+          codeBlockBuilder
+              .add(".$L(this.$L != null\n", fieldToMethod("putAll", f.name), f.name)
+              .add("    ? this.$L : ", f.name)
+              .add("$L.$L())", defaultInstance, fieldToMethod("get", f.name, "Map"));
+        }
+      } else {
+        if (isPojo(f.type.toString(), options)) {
+          codeBlockBuilder
+              .add(".$L(this.$L != null\n", fieldToMethod("set", f.name), f.name)
+              .add("    ? this.$L.convert() : ", f.name)
+              .add("$L.$L())", defaultInstance, fieldToMethod("get", f.name));
+        } else {
+          codeBlockBuilder
+              .add(".$L(this.$L != null\n", fieldToMethod("set", f.name), f.name)
+              .add("    ? this.$L : ", f.name)
+              .add("$L.$L())", defaultInstance, fieldToMethod("get", f.name));
+        }
+      }
+    });
+    codeBlockBuilder.add("\n.build()");
+    return builder
+        .addStatement(codeBlockBuilder.build())
         .build();
   }
 

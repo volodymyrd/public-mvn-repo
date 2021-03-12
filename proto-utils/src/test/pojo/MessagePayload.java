@@ -24,7 +24,13 @@ public final class MessagePayloadPojo {
   }
 
   public MessagePayload convert() {
-    return MessagePayload.newBuilder().build();
+    MessagePayload defaultInstance = MessagePayload.getDefaultInstance();
+    return MessagePayload.newBuilder()
+        .setName(this.name != null
+            ? this.name : defaultInstance.getName())
+        .putAllParams(this.params != null
+            ? this.params : defaultInstance.getParamsMap())
+        .build();
   }
 
   public static MessagePayloadPojo convert(MessagePayload proto) {

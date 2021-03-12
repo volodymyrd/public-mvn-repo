@@ -48,7 +48,17 @@ public final class PersonPojo {
   }
 
   public Person convert() {
-    return Person.newBuilder().build();
+    Person defaultInstance = Person.getDefaultInstance();
+    return Person.newBuilder()
+        .setFirstName(this.firstName != null
+            ? this.firstName : defaultInstance.getFirstName())
+        .setLastName(this.lastName != null
+            ? this.lastName : defaultInstance.getLastName())
+        .addAllPhones(this.phones != null
+            ? this.phones : defaultInstance.getPhonesList())
+        .putAllIds(this.ids != null
+            ? this.ids : defaultInstance.getIdsMap())
+        .build();
   }
 
   public static PersonPojo convert(Person proto) {

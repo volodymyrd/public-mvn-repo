@@ -19,7 +19,7 @@ public class ProtoUtilsTest {
                 .setFirstName("Name 1")
                 .setLastName("Name 2")
                 .build()))
-        .isEqualTo("{\"firstName\":\"Name 1\",\"lastName\":\"Name 2\"}");
+        .isEqualTo("{\"firstName\":\"Name 1\",\"lastName\":\"Name 2\",\"phones\":[],\"ids\":{}}");
   }
 
   @Test

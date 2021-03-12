@@ -2,8 +2,6 @@ package com.volmyr.proto.model.test.org.employee;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +22,7 @@ public final class EmployeePojo {
 
   private Boolean active;
 
-  private Map<String, Object> attributes;
+  private Map<String, Sex> attributes;
 
   private Map<String, AddressPojo> contacts;
 
@@ -92,11 +90,11 @@ public final class EmployeePojo {
     this.active = active;
   }
 
-  public Map<String, Object> getAttributes() {
+  public Map<String, Sex> getAttributes() {
     return attributes;
   }
 
-  public void setAttributes(Map<String, Object> attributes) {
+  public void setAttributes(Map<String, Sex> attributes) {
     this.attributes = attributes;
   }
 
@@ -109,7 +107,34 @@ public final class EmployeePojo {
   }
 
   public Employee convert() {
-    return Employee.newBuilder().build();
+    Employee defaultInstance = Employee.getDefaultInstance();
+    return Employee.newBuilder()
+        .setFirstName(this.firstName != null
+            ? this.firstName : defaultInstance.getFirstName())
+        .setLastName(this.lastName != null
+            ? this.lastName : defaultInstance.getLastName())
+        .setMainAddress(this.mainAddress != null
+            ? this.mainAddress.convert() : defaultInstance.getMainAddress())
+        .addAllAddresses(this.addresses != null
+            ? this.addresses.stream()
+            .map(AddressPojo::convert)
+            .collect(ImmutableList.toImmutableList())
+            : defaultInstance.getAddressesList())
+        .setAge(this.age != null
+            ? this.age : defaultInstance.getAge())
+        .setSex(this.sex != null
+            ? this.sex : defaultInstance.getSex())
+        .setId(this.id != null
+            ? this.id : defaultInstance.getId())
+        .setActive(this.active != null
+            ? this.active : defaultInstance.getActive())
+        .putAllAttributes(this.attributes != null
+            ? this.attributes : defaultInstance.getAttributesMap())
+        .putAllContacts(this.contacts != null
+            ? this.contacts.entrySet().stream()
+            .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, e -> e.getValue().convert()))
+            : defaultInstance.getContactsMap())
+        .build();
   }
 
   public static EmployeePojo convert(Employee proto) {
@@ -124,14 +149,7 @@ public final class EmployeePojo {
     pojo.setSex(proto.getSex());
     pojo.setId(proto.getId());
     pojo.setActive(proto.getActive());
-    pojo.setAttributes(proto.getAttributesMap().entrySet().stream()
-        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, e -> {
-          try {
-            return e.getValue().unpack(Message.class);
-          } catch (InvalidProtocolBufferException ex) {
-            throw new RuntimeException(ex);
-          }
-        })));
+    pojo.setAttributes(proto.getAttributesMap());
     pojo.setContacts(proto.getContactsMap().entrySet().stream()
         .collect(ImmutableMap.toImmutableMap(
             Map.Entry::getKey,
