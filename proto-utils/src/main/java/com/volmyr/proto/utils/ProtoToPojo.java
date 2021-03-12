@@ -16,6 +16,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Any;
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -263,15 +264,8 @@ public final class ProtoToPojo {
       case BYTE_STRING:
         throw new UnsupportedOperationException("Unsupported Java Type: BYTE_STRING");
       case ENUM:
-        String typeFullName;
-        if (field.getEnumType().getContainingType() != null
-            && !field.getEnumType().getContainingType().getName().isEmpty()) {
-          typeFullName = packageName + "."
-              + field.getEnumType().getContainingType().getName() + "$"
-              + field.getEnumType().getName();
-        } else {
-          typeFullName = packageName + "." + field.getEnumType().getName();
-        }
+        String typeFullName = packageName + "." + getNestedClasses(
+            field.getEnumType().getName(), field.getEnumType().getContainingType());
 
         if (field.isRepeated()) {
           return new Field(
@@ -304,16 +298,9 @@ public final class ProtoToPojo {
           String packageNameType = field.getMessageType().getFile().getOptions().getJavaPackage();
           String classNameTypeProto = field.getMessageType().getName();
           String classNameTypePojo = options.prefix() + classNameTypeProto + options.suffix();
-          String typeFullNameProto;
-          if (field.getMessageType().getContainingType() != null
-              && !field.getMessageType().getContainingType().getName().isEmpty()) {
-            typeFullNameProto = packageNameType + "."
-                + field.getMessageType().getContainingType().getName() + "$"
-                + classNameTypeProto;
+          String typeFullNameProto = packageNameType + "."
+              + getNestedClasses(classNameTypeProto, field.getMessageType().getContainingType());
 
-          } else {
-            typeFullNameProto = packageNameType + "." + classNameTypeProto;
-          }
           if (field.getMessageType().getFile().getFullName().equals(protoFileName)
               && results.get(typeFullNameProto) == null) {
             generate(classNameTypeProto, getBuilder(typeFullNameProto));
@@ -338,6 +325,14 @@ public final class ProtoToPojo {
     } else {
       return field.getJsonName();
     }
+  }
+
+  private static String getNestedClasses(String className, Descriptor containingType) {
+    if (containingType == null) {
+      return className;
+    }
+    className = containingType.getName() + "$" + className;
+    return getNestedClasses(className, containingType.getContainingType());
   }
 
   private String generatePojo(

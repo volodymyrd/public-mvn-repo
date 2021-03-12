@@ -126,7 +126,7 @@ public class ProtoToPojoTest {
         .generate()
         .getResults();
 
-    assertThat(results).hasSize(2);
+    assertThat(results).hasSize(3);
     assertThat(results.stream().filter(e -> e.className().equals("PersonExtPojo"))
         .findFirst()
         .orElseThrow(IllegalStateException::new))
@@ -146,7 +146,18 @@ public class ProtoToPojoTest {
                 .packageName("com.volmyr.proto.model.test")
                 .className("MetadataPojo")
                 .pojoFile(
-                    Files.asCharSource(new File("src/test/pojo/MetadataPojo.java"), Charsets.UTF_8)
+                    Files.asCharSource(new File("src/test/pojo/Metadata.java"), Charsets.UTF_8)
+                        .read())
+                .build());
+    assertThat(results.stream().filter(e -> e.className().equals("Metadata1Pojo"))
+        .findFirst()
+        .orElseThrow(IllegalStateException::new))
+        .isEqualTo(
+            ProtoToPojo.Result.builder()
+                .packageName("com.volmyr.proto.model.test")
+                .className("Metadata1Pojo")
+                .pojoFile(
+                    Files.asCharSource(new File("src/test/pojo/Metadata1.java"), Charsets.UTF_8)
                         .read())
                 .build());
   }

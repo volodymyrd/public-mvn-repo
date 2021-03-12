@@ -8,14 +8,10 @@ option java_package = "com.volmyr.proto.model.test";
 
 message PersonExt {
   message Metadata {
-//    message Metadata1 {
-//      string prop = 1;
-//    }
-//    message Metadata2 {
-//      string prop = 1;
-//    }
-//    Metadata1 metadata1 = 1;
-//    Metadata2 metadata2 = 2;
+    message Metadata1 {
+      string prop = 1;
+    }
+    Metadata1 metadata1 = 1;
     string prop = 3;
   }
   string first_name = 1;

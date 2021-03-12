@@ -1,6 +1,6 @@
 package com.volmyr.proto.model.test;
 
-public final class MetadataPojo {
+public final class Metadata1Pojo {
   private String prop;
 
   public String getProp() {
@@ -11,23 +11,23 @@ public final class MetadataPojo {
     this.prop = prop;
   }
 
-  public Metadata convert() {
-    Metadata defaultInstance = Metadata.getDefaultInstance();
-    return Metadata.newBuilder()
+  public Metadata1 convert() {
+    Metadata1 defaultInstance = Metadata1.getDefaultInstance();
+    return Metadata1.newBuilder()
         .setProp(this.prop != null
             ? this.prop : defaultInstance.getProp())
         .build();
   }
 
-  public static MetadataPojo convert(Metadata proto) {
-    MetadataPojo pojo = new MetadataPojo();
+  public static Metadata1Pojo convert(Metadata1 proto) {
+    Metadata1Pojo pojo = new Metadata1Pojo();
     pojo.setProp(proto.getProp());
     return pojo;
   }
 
   @Override
   public String toString() {
-    return "MetadataPojo{" +
+    return "Metadata1Pojo{" +
         "prop='" + prop + '\'' +
         '}';
   }
