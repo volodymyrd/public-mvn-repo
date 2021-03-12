@@ -263,7 +263,16 @@ public final class ProtoToPojo {
       case BYTE_STRING:
         throw new UnsupportedOperationException("Unsupported Java Type: BYTE_STRING");
       case ENUM:
-        String typeFullName = packageName + "." + field.getEnumType().getName();
+        String typeFullName;
+        if (field.getEnumType().getContainingType() != null
+            && !field.getEnumType().getContainingType().getName().isEmpty()) {
+          typeFullName = packageName + "."
+              + field.getEnumType().getContainingType().getName() + "$"
+              + field.getEnumType().getName();
+        } else {
+          typeFullName = packageName + "." + field.getEnumType().getName();
+        }
+
         if (field.isRepeated()) {
           return new Field(
               getFieldName(field),
@@ -293,6 +302,7 @@ public final class ProtoToPojo {
           //return new Field(getFieldName(field), OBJECT);
         } else {
           String packageNameType = field.getMessageType().getFile().getOptions().getJavaPackage();
+          // TODO nested type: field.getMessageType().getFile().getContainingType() != null
           String classNameTypeProto = field.getMessageType().getName();
           String classNameTypePojo = options.prefix() + classNameTypeProto + options.suffix();
           String typeFullNameProto = packageNameType + "." + classNameTypeProto;

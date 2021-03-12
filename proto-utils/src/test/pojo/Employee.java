@@ -16,6 +16,8 @@ public final class EmployeePojo {
 
   private Integer age;
 
+  private Employee.State state;
+
   private Sex sex;
 
   private Long id;
@@ -64,6 +66,14 @@ public final class EmployeePojo {
 
   public void setAge(Integer age) {
     this.age = age;
+  }
+
+  public Employee.State getState() {
+    return state;
+  }
+
+  public void setState(Employee.State state) {
+    this.state = state;
   }
 
   public Sex getSex() {
@@ -122,6 +132,8 @@ public final class EmployeePojo {
             : defaultInstance.getAddressesList())
         .setAge(this.age != null
             ? this.age : defaultInstance.getAge())
+        .setState(this.state != null
+            ? this.state : defaultInstance.getState())
         .setSex(this.sex != null
             ? this.sex : defaultInstance.getSex())
         .setId(this.id != null
@@ -146,6 +158,7 @@ public final class EmployeePojo {
         .map(AddressPojo::convert)
         .collect(ImmutableList.toImmutableList()));
     pojo.setAge(proto.getAge());
+    pojo.setState(proto.getState());
     pojo.setSex(proto.getSex());
     pojo.setId(proto.getId());
     pojo.setActive(proto.getActive());
@@ -165,6 +178,7 @@ public final class EmployeePojo {
         ", mainAddress=" + mainAddress +
         ", addresses=" + addresses +
         ", age=" + age +
+        ", state=" + state +
         ", sex=" + sex +
         ", id=" + id +
         ", active=" + active +
