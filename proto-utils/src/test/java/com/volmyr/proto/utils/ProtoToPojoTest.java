@@ -188,7 +188,7 @@ public class ProtoToPojoTest {
   @Test
   public void shouldCreatePojoFromExternalJarProto() throws Exception {
     File protoDir = new File(
-        "../proto-test-model/target/libs/proto-test-model-0.0.28-SNAPSHOT.jar");
+        "../proto-test-model/target/libs/proto-test-model-0.0.29-SNAPSHOT.jar");
     ImmutableList<ProtoToPojo.Result> results = new ProtoToPojo(
         "com.volmyr.test.proto.model.MessagePayload",
         Options.builder()
