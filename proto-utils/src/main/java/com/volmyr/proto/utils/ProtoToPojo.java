@@ -14,8 +14,11 @@ import static com.volmyr.java_source_utils.JavaPoetClassGenerator.overrideToStri
 import com.google.auto.value.AutoValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
@@ -30,6 +33,7 @@ import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.lang.model.element.Modifier;
@@ -380,8 +384,26 @@ public final class ProtoToPojo {
         TypeName type = ((ParameterizedTypeName) f.type).typeArguments.get(1);
         if (isPojo(type.toString(), options)) {
           return CodeBlock.builder()
-              .add("$L.$L($L.$L())",
+              .add("$L.$L($L.$L()",
                   pojo, fieldToMethod("set", f.name), proto, fieldToMethod("get", f.name, "Map"))
+              .add(".entrySet().stream()\n")
+              .add(".collect($T.toImmutableMap(\n", ImmutableMap.class)
+              .add("    $T::getKey,\n", Entry.class)
+              .add("    e -> $T.convert(e.getValue()))))", type)
+              .build();
+        } else if (type.equals(TypeName.OBJECT)) {
+          return CodeBlock.builder()
+              .add("$L.$L($L.$L()",
+                  pojo, fieldToMethod("set", f.name), proto, fieldToMethod("get", f.name, "Map"))
+              .add(".entrySet().stream()\n")
+              .add(".collect($T.toImmutableMap($T::getKey, e -> {\n",
+                  ImmutableMap.class, Entry.class)
+              .add("  try {\n")
+              .add("    return e.getValue().unpack($T.class);\n", Message.class)
+              .add("  } catch ($T ex) {\n", InvalidProtocolBufferException.class)
+              .add("    throw new $T(ex);\n", RuntimeException.class)
+              .add("  }\n")
+              .add("})))")
               .build();
         }
         return CodeBlock.builder()
@@ -395,7 +417,8 @@ public final class ProtoToPojo {
           return CodeBlock.builder()
               .add("$L.$L($L.$L()",
                   pojo, fieldToMethod("set", f.name), proto, fieldToMethod("get", f.name, "List"))
-              .add(".stream().map($T::convert)", type)
+              .add(".stream()\n")
+              .add(".map($T::convert)\n", type)
               .add(".collect($T.toImmutableList()))", ImmutableList.class)
               .build();
         }

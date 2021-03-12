@@ -1,6 +1,9 @@
 package com.volmyr.proto.model.test.org.employee;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +25,8 @@ public final class EmployeePojo {
   private Boolean active;
 
   private Map<String, Object> attributes;
+
+  private Map<String, AddressPojo> contacts;
 
   public String getFirstName() {
     return firstName;
@@ -95,6 +100,14 @@ public final class EmployeePojo {
     this.attributes = attributes;
   }
 
+  public Map<String, AddressPojo> getContacts() {
+    return contacts;
+  }
+
+  public void setContacts(Map<String, AddressPojo> contacts) {
+    this.contacts = contacts;
+  }
+
   public Employee convert() {
     return Employee.newBuilder().build();
   }
@@ -104,19 +117,25 @@ public final class EmployeePojo {
     pojo.setFirstName(proto.getFirstName());
     pojo.setLastName(proto.getLastName());
     pojo.setMainAddress(AddressPojo.convert(proto.getMainAddress()));
-    pojo.setAddresses(proto.getAddressesList().stream().map(AddressPojo::convert).collect(ImmutableList.toImmutableList()));
+    pojo.setAddresses(proto.getAddressesList().stream()
+        .map(AddressPojo::convert)
+        .collect(ImmutableList.toImmutableList()));
     pojo.setAge(proto.getAge());
     pojo.setSex(proto.getSex());
     pojo.setId(proto.getId());
     pojo.setActive(proto.getActive());
     pojo.setAttributes(proto.getAttributesMap().entrySet().stream()
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> {
+        .collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, e -> {
           try {
             return e.getValue().unpack(Message.class);
           } catch (InvalidProtocolBufferException ex) {
             throw new RuntimeException(ex);
           }
         })));
+    pojo.setContacts(proto.getContactsMap().entrySet().stream()
+        .collect(ImmutableMap.toImmutableMap(
+            Map.Entry::getKey,
+            e -> AddressPojo.convert(e.getValue()))));
     return pojo;
   }
 
@@ -132,6 +151,7 @@ public final class EmployeePojo {
         ", id=" + id +
         ", active=" + active +
         ", attributes=" + attributes +
+        ", contacts=" + contacts +
         '}';
   }
 }
