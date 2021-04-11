@@ -4,7 +4,7 @@ import com.google.auto.value.AutoValue;
 import java.util.Map;
 
 /**
- * Basic Ari response as a Map<String, Object>.
+ * Basic Ari response as a <code>Map{@literal <}String, Object{@literal >}</code>.
  */
 @AutoValue
 public abstract class FullMapResponse {

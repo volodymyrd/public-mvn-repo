@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Basic Ari response as a List of Map<String, Object>.
+ * Basic Ari response as a <code>List of Map{@literal <}String, Object{@literal >}}</code>.
  */
 @AutoValue
 public abstract class FullListMapResponse {
