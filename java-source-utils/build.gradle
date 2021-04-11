@@ -23,6 +23,11 @@ jar {
     baseName 'java-source-utils'
 }
 
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {

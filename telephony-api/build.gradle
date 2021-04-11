@@ -21,6 +21,11 @@ jar {
     baseName 'telephony-api'
 }
 
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {

@@ -24,6 +24,11 @@ dependencies {
     implementation libs.protobuf
 }
 
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {

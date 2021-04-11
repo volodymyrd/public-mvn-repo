@@ -53,6 +53,11 @@ jar {
     baseName 'ptoto-utils'
 }
 
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
