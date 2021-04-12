@@ -64,7 +64,8 @@ subprojects {
 
     buildDir = 'target'
 
-    version = '0.0.29'
+    group = 'com.volmyr'
+    version = '0.0.30'
 
     test {
         testLogging {
